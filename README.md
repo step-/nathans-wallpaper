@@ -9,7 +9,7 @@ When I noticed that the Fatdog64 wallpaper setter had distorted my wallpaper, I 
 ## Compatibility
 I tried to implement my code in a way that is compatible with Quirky's `pwallpaper` setter, and possibly with other recent Puppies that are still using, or want to use, Nathan's wallpaper setter. However, I make no promise about compatibility, as I develop and test on Fatdog64, and I have no time to test and fix other Puppies. For those I will be glad to merge pull-requests from other contributors.
 
-One more thing to say about compatibility concerns Fatdog64 only. As mentioned, Fatdog has (Nathan's) wallpaper setter 0.6, which can run a slideshow. It also has another slideshow script, `/usr/bin/wallpaper-slideshow`. I have not even checked whether my fork of wallpaper setter 0.6 should be compatible with `wallpaper-slideshow`.
+One more thing to say about compatibility concerns Fatdog64 only. As mentioned, Fatdog has (Nathan's) wallpaper setter 0.6.3, which can run a slideshow. It also has another slideshow script, `/usr/bin/wallpaper-slideshow`. I have not even checked whether my fork of wallpaper setter 0.6.3 should be compatible with `wallpaper-slideshow`.
 
-For now the version of wallpaper setter in this repo is Fatdog64-700's original version 0.6. I will start uploading my changes in a few days.
+For now the version of wallpaper setter in this repo is Fatdog64-700's original version 0.6.3. I will start uploading my changes in a few days.
 
