@@ -1,2 +1,3 @@
-#!/bin/sh
-exec /usr/local/apps/Wallpaper/AppRun "$@"
+#!/bin/dash
+exec "${0%/*}/../local/apps/Wallpaper/AppRun" "$@"
+
