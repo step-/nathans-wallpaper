@@ -1,6 +1,6 @@
 # nathans-wallpaper
 
-Bugfix and new functionality fork of Nathan's Wallpaper Setter for Fatdog64 linux (and Puppy linux flavors).
+This repository includes a bug fix and new functionality fork of Nathan's Wallpaper Setter for Fatdog64 linux (and Puppy linux flavors).
 
 ## Motivation
 
@@ -53,6 +53,35 @@ formatted as `[mode':']/path/to/image.ext` like in the previous example.
 
 To set slideshow delay and shuffle mode use the Preferences dialog (application
 menu) or manually set suitable values in `$HOME/.config/wallpaper/preferences`.
+
+## Warnings
+
+### Stop the slideshow
+
+I found this warning in Nathan's [original thread](http://www.murga-linux.com/puppy/viewtopic.php?t=29657) for version 0.5:
+
+_CAUTION! You must manually stop the slideshow before shutting down X or your ROX pinboard file will become corrupted. This is automatically taken care of in Grafpup but will have to be sorted out in Puppy if this is to be adopted._
+
+I do not know if this warning still applies to version 0.6.3 on which my version 0.7.0 is based. You have been warned; be careful to stop a running
+slideshow before shutting down X. The command line is: `wallpaper -stop`.
+
+### Pass valid image files to the slideshow
+
+If you play the slideshow with
+
+    wallpaper -play-list playlist-file
+you may inadvertently include a non-image file or a corrupted image file inside `playlist-file`. Similarly, you could type something like
+
+    wallpaper my-precious-data.xls
+
+by mistake, that is passing a data file when you mean to pass an image file.
+
+_CAUTION! If ROX-Filer is requested to set the pinboard equals to your data file or corrupted image file, there is a chance that ROX-Filer will mark your file as an "invalid pinboard" and **delete** your file._
+
+I plugged all code paths that I could spot against this possibility, so
+the chance that your file be deleted is indeed very slim. But to be certain
+you can only make sure never to pass a data file or a corrupted image file
+to the above command lines. (This incident occurred to me only once, when I passed a corrupted BMP file. That code path has been plugged.)
 
 ## Compatibility
 
