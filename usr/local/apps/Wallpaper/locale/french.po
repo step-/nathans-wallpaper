@@ -1,0 +1,65 @@
+#!/bin/sh
+# Wallpaper setter translation file
+# language fr_FR
+
+###################################
+# Radio buttons
+#
+export LOC_CENTRE="Centre"
+export LOC_TILE="Tile"
+export LOC_SCALE="Scale"
+export LOC_STRETCH="Etire"
+
+# Main window title
+export LOC_MAIN="Arriere plan du bureau"
+
+####################################
+# Menu items
+#
+export LOC_SLIDESHOW="Lancer/Arreter le diaporama (ce repertoire)"
+export LOC_OPTIONS="Options"
+export LOC_QUIT="Quitter"
+export LOC_FILE="Fichier"
+export LOC_EDIT="Editer"
+export LOC_VIEW="Voir"
+export LOC_HELP="Aide"
+
+# Image file frame
+export LOC_FILE_FRAME="Fichier image"
+# Current image frame
+export LOC_CURRENT_IMAGE="Image actuelle"
+# Mode frame
+export LOC_MODE="Mode"
+
+#######################################
+# Actions frame
+#
+export LOC_ACTIONS="Actions"
+# buttons
+export LOC_APPLY="Appliquer"
+export LOC_CLEAR="Vider"
+export LOC_FILER="Filer"
+export LOC_CLOSE="Fermer"
+
+#######################################
+# About window
+#
+export LOC_ABOUT_WINDOW="Wallpaper: a propos"
+export LOC_ABOUT_FRAME="A propos"
+export LOC_ABOUT_TEXT="Wallpaper a ete ecrit en octobre 2007 par Nathan Fisher specialement pour Grafpup Linux. Wallpaper vous permet de changer facilement l'arriere plan du bureau ou de lancer des images en diaporama. Ce programme est libre et sous la licence GPL version 2."
+
+#######################################
+# Preferences
+#
+export LOC_OPTIONS_WINDOW="Wallpaper: options"
+export LOC_SLIDESHOW_FRAME="Diaporama"
+export LOC_DELAY="Intervalle (secondes)"
+export LOC_CHOOSE="Choisir"
+export LOC_DELAY1="Intervalle du diaporama"
+export LOC_DIR="Repertoire du diaporama"
+export LOC_DEFAULTS="Programmes par defaut"
+export LOC_FILEMANAGER="Gestionnaire de fichiers"
+export LOC_EDITOR="Editeur d'images"
+export LOC_VIEWER="Afficheur d'images"
+
+

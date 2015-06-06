@@ -1,0 +1,65 @@
+#!/bin/sh
+# Wallpaper setter translation file
+# language it
+
+###################################
+# Radio buttons
+#
+export LOC_CENTRE="Centra"
+export LOC_TILE="Affianca"
+export LOC_SCALE="Scala"
+export LOC_STRETCH="Estendi"
+
+# Main window title
+export LOC_MAIN="Sfondo del desktop"
+
+####################################
+# Menu items
+#
+export LOC_SLIDESHOW="Avvia/arresta slideshow (questa directory)"
+export LOC_OPTIONS="Opzioni"
+export LOC_QUIT="Esci"
+export LOC_FILE="File"
+export LOC_EDIT="Modifica"
+export LOC_VIEW="Vedi"
+export LOC_HELP="Aiuto"
+
+# Image file frame
+export LOC_FILE_FRAME="File immagine"
+# Current image frame
+export LOC_CURRENT_IMAGE="Immagine corrente"
+# Mode frame
+export LOC_MODE="Modo"
+
+#######################################
+# Actions frame
+#
+export LOC_ACTIONS="Azioni"
+# buttons
+export LOC_APPLY="Applica"
+export LOC_CLEAR="Cancella"
+export LOC_FILER="Filer"
+export LOC_CLOSE="Chiudi"
+
+#######################################
+# About window
+#
+export LOC_ABOUT_WINDOW="Wallpaper: su"
+export LOC_ABOUT_FRAME="Su"
+export LOC_ABOUT_TEXT="     Scritto il 26 ottobre 2007 da Nathan Fisher espressamente per Grafpup Linux. Wallpaper ti permette di impostare facilmente un'immagine di sfondo o di far partire una serie di immagini come slideshow. Questo programma è free software rilasciato sotto la licenza GPL versione 2."
+
+#######################################
+# Preferences
+#
+export LOC_OPTIONS_WINDOW="Wallpaper: opzioni"
+export LOC_SLIDESHOW_FRAME="Slideshow"
+export LOC_DELAY="Ritardo slideshow (in secondi)"
+export LOC_CHOOSE="Scegli"
+export LOC_DELAY1="ritardo slideshow"
+export LOC_DIR="directory per lo Slideshow"
+export LOC_DEFAULTS="programmi di default"
+export LOC_FILEMANAGER="File manager"
+export LOC_EDITOR="Editor d'immagini"
+export LOC_VIEWER="Visualizzatore immagini"
+
+

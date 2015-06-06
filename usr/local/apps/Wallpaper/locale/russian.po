@@ -1,0 +1,64 @@
+#!/bin/sh 
+#Обои для рабочего стола сеттер перевода файла 
+# Языка en_US 
+
+################################### 
+# Переключателями 
+# 
+export LOC_CENTRE="Центр" 
+export LOC_TILE="Черепица" 
+export LOC_SCALE="Масштаб" 
+export LOC_STRETCH="растянутыми" 
+
+# Главное окно титула 
+export LOC_MAIN="на рабочем столе справочная" 
+
+#################################### 
+# Меню 
+# 
+export LOC_SLIDESHOW="начало/остановка слайд-шоу (этот каталог)" 
+export LOC_OPTIONS="Параметры" 
+export LOC_QUIT="Выход" 
+export LOC_FILE="Файл" 
+export LOC_EDIT="Правка" 
+export LOC_VIEW="Вид" 
+export LOC_HELP="Помощь" 
+
+# Файл изображения кадра 
+export LOC_FILE_FRAME="Файл изображения" 
+# Текущее изображение кадра 
+export LOC_CURRENT_IMAGE="Текущее изображение" 
+# Mode кадр 
+export LOC_MODE="Режим" 
+
+####################################### 
+# Actions кадр 
+# 
+export LOC_ACTIONS="Действия" 
+# Кнопками 
+export LOC_APPLY="Применить" 
+export LOC_CLEAR="Очистить" 
+export LOC_FILER="файлменеджер" 
+export LOC_CLOSE="Закрыть" 
+
+####################################### 
+# О окно 
+# 
+export LOC_ABOUT_WINDOW="Обои для рабочего стола": о " 
+export LOC_ABOUT_FRAME="О" 
+export LOC_ABOUT_TEXT="Письменные октября 2007 года Натан Фишер специально для Grafpup Linux. обоев alllows вам легко установить фоновое изображение или запустить серию снимков, как слайд-шоу. Данная программа является свободным программным обеспечением выпущен под лицензией GPL версии 2." 
+
+####################################### 
+# Настройки 
+# 
+export LOC_OPTIONS_WINDOW="Обои для рабочего стола: варианты" 
+export LOC_SLIDESHOW_FRAME="Слайд-шоу" 
+export LOC_DELAY="Слайд-шоу задержки (в секундах)" 
+export LOC_CHOOSE="Выбрать" 
+export LOC_DELAY1="Слайд-шоу промедления" 
+export LOC_DIR="Слайд-шоу каталог" 
+export LOC_DEFAULTS="программ по умолчанию" 
+export LOC_FILEMANAGER="Файловый менеджер" 
+export LOC_EDITOR="редактор изображение" 
+export LOC_VIEWER="просмотра изображений"
+

@@ -1,0 +1,65 @@
+#!/bin/sh
+# Wallpaper setter translation file
+# language ja_JP # YoN translated to japanese 20090203
+
+###################################
+# Radio buttons
+#
+export LOC_CENTRE="中央"
+export LOC_TILE="タイル"
+export LOC_SCALE="スケール"
+export LOC_STRETCH="ストレッチ"
+
+# Main window title
+export LOC_MAIN="デスクトップ背景"
+
+####################################
+# Menu items
+#
+export LOC_SLIDESHOW="スライドショーの開始/停止 (このディレクトリ)"
+export LOC_OPTIONS="オプション"
+export LOC_QUIT="終了"
+export LOC_FILE="ファイル"
+export LOC_EDIT="編集"
+export LOC_VIEW="表示"
+export LOC_HELP="ヘルプ"
+
+# Image file frame
+export LOC_FILE_FRAME="画像ファイル"
+# Current image frame
+export LOC_CURRENT_IMAGE="現在の画像"
+# Mode frame
+export LOC_MODE="モード"
+
+#######################################
+# Actions frame
+#
+export LOC_ACTIONS="アクション"
+# buttons
+export LOC_APPLY="適用"
+export LOC_CLEAR="クリア"
+export LOC_FILER="ファイラ"
+export LOC_CLOSE="閉じる"
+
+#######################################
+# About window
+#
+export LOC_ABOUT_WINDOW="Wallpaper: 情報"
+export LOC_ABOUT_FRAME="情報"
+export LOC_ABOUT_TEXT="     Written October, 2006 by Nathan Fisher especially for Grafpup Linux. Wallpaper alllows you to easily set the background image or run a series of images as a slideshow. Updated by Will Davies Jan, 2008. Now handles spaces in image paths and also in the location of the roxapp. Drag n drop slideshow support enabled for dropping multiple images onto the application. This program is free software released under the GPL license version 2."
+
+#######################################
+# Preferences
+#
+export LOC_OPTIONS_WINDOW="Wallpaper: オプション"
+export LOC_SLIDESHOW_FRAME="スライドショー"
+export LOC_DELAY="スライドショー遅延 (秒)"
+export LOC_CHOOSE="選択"
+export LOC_DELAY1="スライドショー遅延"
+export LOC_DIR="スライドショーディレクトリ"
+export LOC_DEFAULTS="デフォルトプログラム"
+export LOC_FILEMANAGER="ファイルマネージャ"
+export LOC_EDITOR="画像エディタ"
+export LOC_VIEWER="画像ビューア"
+
+

@@ -1,0 +1,64 @@
+#!/bin/sh 
+#Fondo de pantalla setter archivo de traducción 
+# Idioma es_ES 
+
+################################### 
+# Radio botones 
+# 
+export LOC_CENTRE="Centro"
+export LOC_TILE="Azulejo"
+export LOC_SCALE="Escala"
+export LOC_STRETCH="tensado"
+
+# Título de la ventana principal
+export LOC_MAIN="el fondo del escritorio"
+
+#################################### 
+# Cada elemento del menú
+# 
+export LOC_SLIDESHOW="Iniciar/Parar pase de diapositivas (el directorio)"
+export LOC_OPTIONS="Opciones"
+export LOC_QUIT="Salir"
+export LOC_FILE="Archivo"
+export LOC_EDIT="Editar"
+export LOC_VIEW="Ver"
+export LOC_HELP="Ayuda"
+
+# Archivo de imagen marco 
+export LOC_FILE_FRAME="Archivo de imagen"
+# Actual marco de imagen 
+export LOC_CURRENT_IMAGE="imagen actual"
+# Modo marco 
+export LOC_MODE="Modalidad"
+
+####################################### 
+# Acciones marco 
+# 
+export LOC_ACTIONS="Acciones"
+# Botones 
+export LOC_APPLY="Aplicar"
+export LOC_CLEAR="Borrar"
+export LOC_FILER="Ficheros"
+export LOC_CLOSE="Cerrar"
+
+####################################### 
+# Acerca de la ventana 
+# 
+export LOC_ABOUT_WINDOW="Fondo de pantalla: sobre"
+export LOC_ABOUT_FRAME="Acerca de"
+export LOC_ABOUT_TEXT="Escrito de octubre, 2007 por Nathan Fisher especialmente para Grafpup Linux. Wallpaper alllows a configurar fácilmente la imagen de fondo o ejecutar una serie de imágenes como un pase de diapositivas. Este programa es software libre liberado bajo la licencia GPL versión 2."
+
+####################################### 
+# Preferencias 
+# 
+export LOC_OPTIONS_WINDOW="Wallpaper: opciones"
+export LOC_SLIDESHOW_FRAME="Presentación de Diapositivas"
+export LOC_DELAY="pase de diapositivas de demora (en segundos)"
+export LOC_CHOOSE="Elegir"
+export LOC_DELAY1="Presentación de diapositivas demora"
+export LOC_DIR="Presentación de diapositivas directorio"
+export LOC_DEFAULTS="Por defecto los programas"
+export LOC_FILEMANAGER="Gestor de archivos"
+export LOC_EDITOR="Editor de Imágenes"
+export LOC_VIEWER="Visor de Imágenes"
+
