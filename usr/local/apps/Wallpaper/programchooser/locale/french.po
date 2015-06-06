@@ -1,0 +1,8 @@
+#!/bin/sh 
+# Fichier de traduction pour programchooser 
+# Langue fr 
+
+export LOC_MAIN="Choisir programme"
+export LOC_HEADERS="Programme | Commande"
+export LOC_HINT="Choisissez un programme a partir de la liste, entrez une commande personnalisee, ou utiliser le dossier pour sélectionner le programme en utilisant un sélecteur de fichier". 
+export LOC_CLOSE="Fermer"

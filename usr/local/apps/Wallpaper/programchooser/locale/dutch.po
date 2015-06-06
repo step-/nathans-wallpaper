@@ -1,0 +1,8 @@
+#!/bin/sh
+# Vertaling bestand voor programchooser 
+# Taal nl_NL 
+
+export LOC_MAIN="Kies programma"
+export LOC_HEADERS="Programma | Commando"
+export LOC_HINT="Kies een programma uit de lijst, voer een ander commando, of gebruik maken van de map-knop voor het selecteren van het programma met behulp van een bestand selector." 
+export LOC_CLOSE="Sluiten"

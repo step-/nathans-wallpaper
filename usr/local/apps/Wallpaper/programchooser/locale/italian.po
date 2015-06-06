@@ -1,0 +1,8 @@
+#!/bin/sh 
+# File di traduzione per programchooser 
+# Lingua it 
+
+esport LOC_MAIN="Scegli il programma"
+export LOC_HEADERS="Programma | Comando"
+esport LOC_HINT="Scegli un programma dalla lista, inserire un comando personalizzato, o utilizzare la cartella pulsante per selezionare il programma usando un selettore file"
+esport LOC_CLOSE="Chiudi"
