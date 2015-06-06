@@ -1,18 +1,60 @@
-#!/bin/sh
+#!/bin/dash
 # Sets the background image to a slideshow
 
-DIR="$1"
-SHOW="$HOME/.config/wallpaper/slideshow"
-find $DIR > $SHOW
+[ -z "${USRDIR}" ] && USRDIR="${HOME}/.config/wallpaper"
+
+# source INT and RANDOM_IMAGE settings
+. "${USRDIR}/preferences"
+if [ "${RANDOM_IMAGE}" = true ]; then
+  shuffle=shuf
+  shift
+fi
+
+# mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'
+# $1 ::= [[mode':']image-dir-path] | playlist-file-path
+MODE=${1%:*}; idp=${1#*:}; [ "${MODE}" = "${idp}" ] && MODE=
+
+DIR="${idp:-/usr/share/backgrounds}"
+SHOW="${USRDIR}/slideshow"
+if [ -d "${DIR}" ]; then
+  # Try filling MODE value from file backgroundmode, if it exists
+  if [ -z "${MODE}" -a -s "${USRDIR}/backgroundmode" ]; then
+    read MODE < "${USRDIR}/backgroundmode"
+  fi
+  find "${DIR}" -type f | grep -i -E "\.(jpg|jpeg|png|gif|tiff?|bmp|svg)$" > "${SHOW}"
+else
+  # $1 ::= playlist-file-path
+  # cases: /usr/bin/wallpaper -play-list=$1 or $APPDIR/slideshow -start-list=$1
+  cp -f "$1" "${SHOW}"
+fi
+if which $shuffle >/dev/null 2>&1; then
+  $shuffle "${SHOW}" > "${SHOW}.tmp"
+  mv -f "${SHOW}.tmp" "${SHOW}"
+fi
 
 # begin loop
+first_iter=true
 while :;
 do
- for IMG in `cat $SHOW | grep --extended-regexp "jpg|jpeg|png|gif|tif|tiff|svg"`
- do
-  # re-source the preferences file in case the interval has changed
-  . $HOME/.config/wallpaper/preferences
-  wallpaper $IMG
-  sleep $INT
- done
+  while read IMG; do
+    # re-source the preferences file in case the interval has changed
+    . "${USRDIR}/preferences"
+
+    # re-source background mode in case it has changed
+    case ${IMG} in
+      *:*) # explicit mode, no re-sourcing needed
+        MODE=${IMG%:*}; ifp=${IMG#*:}; [ "${MODE}" = "${ifp}" ] && MODE= ;;
+      *) # implicit mode, do re-sourcing except on first iteration
+        ifp=$IMG
+        [ -z "${first_iter}" -a -s "${USRDIR}/backgroundmode" ] &&
+          read MODE < "${USRDIR}/backgroundmode"
+    esac
+
+    # change desktop background
+    "${APPDIR:-/usr/local/apps/Wallpaper}/AppRun" "${MODE:-Centre}:${ifp}"
+              # was [/usr/bin/]wallpaper "$IMG"
+
+    first_iter= # enable reading backgroundmode
+    sleep ${INT:-15}
+  done < "${SHOW}"
 done

@@ -1,19 +1,36 @@
-#!/bin/sh
+#!/bin/dash
 
-killslide() {
- if [ ! "`ps | grep wallslide | grep -v grep`" = "" ];then
-  killall wallslide
- fi
+# Determine the path to this application.
+APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
+export APPDIR # to wallslide
+
+slideshow_is_running()
+{
+  [ ! "`ps | grep wallslide | grep -v grep`" = "" ]
 }
+
+killslide()
+{
+  slideshow_is_running && killall wallslide
+}
+
 case $1 in
- -stop)
- killslide
- ;;
- -start)
- if [ ! "`ps | grep wallslide | grep -v grep`" = "" ];then
-  killslide
- else
-  exec wallslide `dirname $2`
- fi
- ;;
+  -stop)
+    killslide
+  ;;
+  -start)
+    if slideshow_is_running; then
+      killslide
+    else
+      # $2::=[mode':']image-dir-path; mode::='Centre'|'Scale'|'Tile'|'Stretch'
+      [ -d "${2#*:}" ] && exec wallslide "$2"
+      exec wallslide "${2%/*}" # legacy
+    fi
+  ;;
+  -start-list)
+    if slideshow_is_running; then
+      killslide
+    else
+      exec wallslide "$2"
+    fi
 esac

@@ -1,28 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 
 # Determine the path to this application.
-CURDIR="`pwd`"
-APPDIR=`dirname "$0"`
-cd "${APPDIR}"
-APPDIR="`pwd`"
-APPDIR_ESC=$(echo $APPDIR | sed 's/ /\\ /g') #escaping spaces for gtkdialog
-cd "${CURDIR}"
+APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
+export APPDIR # to $BG_DLG
 
 #just some insurance 110905
-GTKDMIN3_VER="`gtkdialog3 -v|cut -d ' ' -f3|cut -d '.' -f3`" #need at least 21 ie: gtkdialog-0.7.21
-if [ "$GTKDMIN3_VER" -lt "21" ];then
-	GTKD4="`which gtkdialog4`"
-		if [ "$GTKD4" = "" ];then xmessage "You need to upgrade gtkdialog"
-			else
-			export GTKDIALOG="gtkdialog4"
-		fi
-		else
-			export GTKDIALOG="gtkdialog3"
+#need at least gtkdialog-0.7.21
+if gtkdialog3 -v|awk '/version /{split($3,a,".");exit(a[2]>7||a[3]>20)}'; then
+  if ! which gtkdialog4 >&- 2>&-; then
+    xmessage "You need to upgrade gtkdialog"
+    exit 1
+  else
+    export GTKDIALOG=gtkdialog4
+  fi
+else
+  export GTKDIALOG=gtkdialog3
 fi
 
 # setup working space
-[ ! -d $HOME/.config/wallpaper ] && mkdir $HOME/.config/wallpaper
-PREFS="$HOME/.config/wallpaper/preferences"
+export USRDIR=$HOME/.config/wallpaper
+mkdir -p "${USRDIR}"
+PREFS="${USRDIR}/preferences"
 [ ! -f $PREFS ] && touch $PREFS
 . $PREFS
 [ "$INT" = "" ] && echo 'INT="15"' >> $PREFS
@@ -32,156 +30,310 @@ PREFS="$HOME/.config/wallpaper/preferences"
 [ "$IMGEDITOR" = "" ] && echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
 . $PREFS
 
-# Get translations
-ENVIRONMENT_LANG=`echo $LANG | sed "s/\(..\).*/\1/"` #detect environment language 
-case $ENVIRONMENT_LANG in
-	da)	export LANGUAGE="danish" ;;
-	de)	export LANGUAGE="german" ;;
-	en)	export LANGUAGE="english" ;;
-	es)	export LANGUAGE="spanish" ;;
-	fi)	export LANGUAGE="finnish" ;;
-	fr)	export LANGUAGE="french" ;;
-	it)	export LANGUAGE="italian" ;;
-	ja)	export LANGUAGE="japanese" ;;
-	nb)	export LANGUAGE="norwegian" ;; #translation is norwegian bokmål
-	nl)	export LANGUAGE="dutch" ;;
-	nn)	export LANGUAGE="norwegian" ;; #Use norwegian bokmål, since there is no norwegian nynorsk
-	ru)	export LANGUAGE="russian" ;;
-	se)	export LANGUAGE="swedish" ;;
-	*)	export LANGUAGE="english" ;; #english for contries without translation
+#LANG=de_DE.UTF-8 # full example
+case "${LANG}" in
+        da*)	export LANGUAGE="danish" ;;
+        de*)	export LANGUAGE="german" ;;
+        en*)	export LANGUAGE="english" ;;
+        es*)	export LANGUAGE="spanish" ;;
+        fi*)	export LANGUAGE="finnish" ;;
+        fr*)	export LANGUAGE="french" ;;
+        it*)	export LANGUAGE="italian" ;;
+        ja*)	export LANGUAGE="japanese" ;;
+        nb*)	export LANGUAGE="norwegian" ;; #translation is norwegian bokmål
+        nl*)	export LANGUAGE="dutch" ;;
+        nn*)	export LANGUAGE="norwegian" ;; #Use norwegian bokmål, since there is no norwegian nynorsk
+        ru*)	export LANGUAGE="russian" ;;
+        se*)	export LANGUAGE="swedish" ;;
+        *)	export LANGUAGE="english" ;; #english for contries without translation
 esac
 . "$APPDIR/locale/english.po" #always run to fill gaps in translation
-[ -f "$APPDIR/locale/${LANGUAGE}.po" ] && . "$APPDIR/locale/${LANGUAGE}.po" 2> /dev/null
+[ -f "$APPDIR/locale/${LANGUAGE}.po" ] && . "$APPDIR/locale/${LANGUAGE}.po" 2>&-
+
+# Emit background_mode \n background_path
+# Note: mode is output as UK-spelling infinitive verb as 'rox --RPC' expects
+get_current_background() # $1-option
+{
+  # --from-ROX forces reading PuppyPin
+#|set +x
+#|echo "
+#|------------ get_current_background" >&2
+#|(
+#|set -x
+  if [ "$1" != --from-ROX ] && [ -s "${USRDIR}/bg_img" ]; then
+    cat "${USRDIR}/backgroundmode" "${USRDIR}/bg_img"
+    # Caveat: on startup backgroundmode may not match PuppyPin's current style
+    return
+  fi
+  # Read from ROX
+  # Caveat: apparently rox --RPC doesn't update PuppyPin, so we
+  # take the most recent file between PuppyPin and pb_default
+  local pf=${HOME}/Choices/ROX-Filer/PuppyPin
+  local pb=${HOME}/.config/rox.sourceforge.net/ROX-Filer/pb_default
+  [ "${pf}" -ot "${pb}" ] && pf=${pb}
+  if [ -f "${pf}" ]; then
+    #ex.   <backdrop style="Stretched">/path/to/file.ext</backdrop>
+    awk '
+    /<backdrop[ >]/ {
+      split($0, a, /[<>]/)
+      path = a[3]
+      split(a[2], b, /"/)
+      style = b[2] # Stretched, Centre, Centered, etc.
+      # convert to UK-spelling infinitive verb for rox --RPC
+      if(style ~ /Scale.*/) style="Scale"
+      else if(style ~ /Tile.*/) style="Tile"
+      else if(style ~ /Stretch.*/) style="Stretch"
+      else style="Centre"
+      print style; print path
+      exit
+    }' "${pf}"
+    return
+  fi
+#|)
+}
+export -f get_current_background # bash
 
 # what is the old background?
 #grafpup uses pinboard #$HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default
 #puppy 4.1.2 uses $HOME/Choices/ROX-Filer/PuppyPin
-OLDIMAGE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '>' | cut -f 1 -d '<'`"
-OLDMODE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '"'`" #'
-[ "$OLDMODE" = "" ] && OLDMODE="Stretch"
-[ "$OLDMODE" = "Stretched" ] && OLDMODE="Stretch"
-[ "$OLDMODE" = "Scaled" ] && OLDMODE="Scale"
-[ "$OLDMODE" = "Tiled" ] && OLDMODE="Tile"
-[ "$OLDMODE" = "Centred" ] && OLDMODE="Centre"
-echo $OLDMODE > $HOME/.config/wallpaper/backgroundmode
+#OLDIMAGE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '>' | cut -f 1 -d '<'`"
+#OLDMODE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '"'`" #'
+{ read OLDMODE; read OLDIMAGE; } <<EOF
+  $(get_current_background --from-ROX)
+EOF
+#case "${OLDMODE}" in
+# Scale*) OLDMODE=Scale  ;;
+# Stretch*) OLDMODE=Stretch ;;
+# Tile*) OLDMODE=Tile ;;
+# Center*|Centre*|*) OLDMODE=Centre ;; # Most sensible catchall
+#esac
+OLDMODE=${OLDMODE:-Centre} # Most sensible catchall
 
-# if run with an image file as an argument
+# step 20150503
+# preview widget image (symlink for .jpgs, regular file otherwise)
+  #keep compatible with: "#show image #20110624 01micko, requires new gtkdialog"
+export PREVIEWIMG=/tmp/current_wallpaper_selection.jpg
+# stretched wallpaper path container (Stretch mode)
+  #keep compatible with Quirky: "#140101 background_reshape has changed..."
+export STRETCHEDWPC=/tmp/qwallpaper_reshaped
+# new preview icons, info $APPDIR/source.txt
+export FOLDERPREVIEW=${APPDIR}/folder.jpg
+export NOIMAGEPREVIEW=${APPDIR}/no-image.jpg
+
+# if run with an image file or an option as an argument
 if [ "$#" -eq 1 ];then
  case $1 in
-  -play)
+  -play|-play=*|-play-list=*)
    [ -f $HOME/.config/sessionrc ] && . $HOME/.config/sessionrc
-   [ -f $HOME/.config/wallpaper/preferences ] && . $HOME/.config/wallpaper/preferences
-   [ "$SLIDEDIR" = "" ] && SLIDEDIR="/usr/share/backgrounds"
-   exec "$APPDIR/slideshow" -start "$SLIDEDIR/file"
+   [ -f "${USRDIR}/preferences" ] && . "${USRDIR}/preferences"
+   case $1 in
+     -play-list=*) exec "${APPDIR}/slideshow" -start-list "${1#*=}" ;;
+     -play=*) thismode=${1#*=} ;;
+     *) thismode=${OLDMODE} ;;
+   esac
+   exec "$APPDIR/slideshow" -start "${thismode}:${SLIDEDIR:-/usr/share/backgrounds}"
+  ;;
+  -stop)
+   exec "$APPDIR/slideshow" -stop 
   ;;
   -about)
    exec "$APPDIR/functions" -about
   ;;
-  *)
-   #killall wallslide
-   if [ "$(which fixwidgets)" ]; then
-		echo "$1" > $HOME/.config/wallpaper/bg_img
-		fixwidgets -wallpaper_setter
-	else
-		exec "$APPDIR/set_bg" "$1" #revert 120808
-		#exec set_bg "$1" #110408
-	fi
-	exit
+  *) # We get here when wallslide runs AppRun to play a slideshow image.
+   # or when user runs /usr/bin/wallpaper /path/to/image/file.ext.
+   # Note: we don't test is_supported_image $1 on purpose, to give some
+   # leeway to a slideshow of symbolically linked images (hidden feature).
+
+   # Besides, $1 may actually be specified as this-mode':'image-file-path,
+   # in which case this-mode overrides OLDMODE
+   case $1 in
+     *:*) thismode=${1%:*}; ifp=${1#*:} ;;
+     *) thismode=${OLDMODE}; ifp=$1 ;;
+   esac
+
+   # For dialog_change_revert and on_signal.
+   echo "${thismode} ${ifp}" > "${USRDIR}/bg_changed"
+#|echo >&2 "======== AppRun slideshow ${thismode} ${ifp}" \> "${USRDIR}/bg_changed"
+
+   if which fixwidgets >&- 2>&-; then
+     echo "${ifp}" > "${USRDIR}/bg_img"
+     fixwidgets -wallpaper_setter
+   else
+     # adding ${thismode}: allows changing mode while the slideshow is playing
+     "${APPDIR}/set_bg" "${thismode}:${ifp}"
+     # "${APPDIR}/set_bg" "$1" # revert 120808
+     #exec set_bg "$1" #110408
+   fi
+   # Now that the current slideshow image is being displayed and we are
+   # about to exit, we want to tidy up by removing the stretched wallpaper
+   # that script background_reshape created, if any. If we didn't remove it
+   # the slideshow would progressively build up duplicates of all
+   # input image files inside the hidden cache directory.
+#|set +x
+#|echo >&2 "
+#|---------- AppRun $(date)"
+#|set -x
+   if [ ${OLDMODE} = Stretch -a -s "${STRETCHEDWPC}" ] && read cached < "${STRETCHEDWPC}"; then
+     rm -f "${cached}" "${STRETCHEDWPC}"
+   fi
+   exit
   ;;
  esac
-elif [ "$#" -gt 1 ];then ##multiple arguments = several images for a slideshow
- [ "$1" = '-nextslide' ] && exec "$APPDIR/set_bg" "$2"
- killall wallslide
+elif [ "$#" -gt 1 ]; then
+ # slideshow from multiple image path arguments
+ "${APPDIR}/slideshow" -stop
  [ -f $HOME/.config/sessionrc ] && . $HOME/.config/sessionrc
- [ -f $HOME/.config/wallpaper/preferences ] && . $HOME/.config/wallpaper/preferences
- SLIDEDIR="$HOME/.config/wallpaper/slideshow-dir"
- SLIDEDIR_ESC=$(echo $SLIDEDIR | sed 's/\//\\\//g')
- sed -i 's/SLIDEDIR=.*/SLIDEDIR=\"'"$SLIDEDIR_ESC"'\"/' $HOME/.config/wallpaper/preferences
- rm $SLIDEDIR_ESC/*
- mkdir -p "$SLIDEDIR"
- oldIFS=$IFS
- IFS='
-'
- for FILE in $@; do
- ln -s "$FILE" "$SLIDEDIR"
- done
- IFS=$oldIFS
- exec "$APPDIR/slideshow" -start "$SLIDEDIR/file"
+ [ -f "${USRDIR}/preferences" ] && . "${USRDIR}/preferences"
+ for arg; do echo "${arg}"; done > /tmp/wallpaper-slide
+ exec "${APPDIR}/slideshow" -start-list /tmp/wallpaper-slide
 fi
 
+echo $OLDMODE > "${USRDIR}/backgroundmode" # ROX is displaying this mode
+echo "${OLDIMAGE}" > "${USRDIR}/bg_img"
+
+# Save initial background to be restored on exiting w/o Apply
+# (don't move this line before slideshow processing)
+echo "${OLDMODE} ${OLDIMAGE}" > "${USRDIR}/restore" # on Exit w/o Apply
 
 # Radio buttons
-CENTREBUTTON="<radiobutton>
-<label>$LOC_CENTRE</label>
-<action>echo Centre > $HOME/.config/wallpaper/backgroundmode</action>
-<action>$APPDIR_ESC/slideshow -stop</action>
-<action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-<action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-<action type=\"refresh\">TEXT</action>
-</radiobutton>"
-TILEBUTTON="<radiobutton>
-<label>$LOC_TILE</label>
-<action>echo Tile > $HOME/.config/wallpaper/backgroundmode</action>
-<action>$APPDIR_ESC/slideshow -stop</action>
-<action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-<action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-<action type=\"refresh\">TEXT</action>
-</radiobutton>"
-SCALEBUTTON="<radiobutton>
-<label>$LOC_SCALE</label>
-<action>echo Scale > $HOME/.config/wallpaper/backgroundmode</action>
-<action>$APPDIR_ESC/slideshow -stop</action>
-<action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-<action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-<action type=\"refresh\">TEXT</action>
-</radiobutton>"
-STRETCHBUTTON="<radiobutton>
-<label>$LOC_STRETCH</label>
-<action>echo Stretch > $HOME/.config/wallpaper/backgroundmode</action>
-<action>$APPDIR_ESC/slideshow -stop</action>
-<action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-<action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-<action type=\"refresh\">TEXT</action>
-</radiobutton>"
+get_loc_mode_label() # $1-mode
+{
+#|set +x
+#|>&2 echo "
+#|---------- get_loc_mode_label $1"
+#|set -x
+  case $1 in
+    Stretch*) echo "${LOC_STRETCH} ${LOC_STRETCH_TOOLTIP}";;
+    Tile*) echo "${LOC_TILE} ${LOC_TILE_TOOLTIP}";;
+    Scale*) echo "${LOC_SCALE} ${LOC_SCALE_TOOLTIP}";;
+    Centre*|Center*) echo "${LOC_CENTRE} ${LOC_CENTRE_TOOLTIP}";;
+    *) echo "get_loc_mode_label error";; # shouldn't happen
+  esac
+#|set +x
+}
+export -f get_loc_mode_label # bash
 
+make_mode_button() # $1-mode $1-old-mode
+{
+#|set +x
+#|echo >&2 "
+#|---------- make_mode_button $*"
+#|set -x
+  local label tooltip match= mode=$1 oldmode=$2
+  read label tooltip <<EOF
+  $(get_loc_mode_label "${mode}")
+EOF
+#  # fuzzily comparing oldmode == mode
+#  case ${oldmode} in
+#    Tile*) case ${mode} in Tile*) match=1 ;; esac ;;
+#    Scale*) case ${mode} in Scale*) match=1 ;; esac ;;
+#    Stretch*) case ${mode} in Stretch*) match=1 ;; esac ;;
+#    Center*|Centre*) case ${mode} in Center*|Centre*) match=1 ;; esac ;;
+#  esac
+[ "${oldmode}" = "${mode}" ] && match=1 # is the active radio button
+  echo "<radiobutton ${match:+active=\"true\"} tooltip-text=\"${tooltip}\">
+ <label>${label}</label>
+ <variable>RADIO${mode}</variable>
+ <output file>/tmp/wallpaper-radio-$1</output>
+ <action>save:RADIO${mode}</action>
+ <action>if true trigger_mode_button \"${mode}\" \$LIVE</action>
+ <action>if true refresh:STATUSBAR</action>
+</radiobutton>"
+#|set +x
+}
+
+get_mode_button() # output currently active button name (= enabled mode)
+{
+  # Theory of operation: in make_mode_button() notice that each RADIO${mode}
+  # button auto-saves its state (true/false) in /tmp/wallpaper-radio-${mode}...
+  grep -lF true /tmp/wallpaper-radio-* | cut -d- -f3
+}
+export -f get_mode_button # bash
+
+trigger_mode_button() # $1-mode|'read' $2-LIVE('true'|'false')
+{
+#|set +x
+#|echo >&2 "
+#|---------- trigger_mode_button $*"
+#|set -x
+  #"${APPDIR}/slideshow" -stop
+  local cwd=${PWD} # bash
+  local mode live_mode=$2
+  if is_supported_image "${IMAGE}" && cd "${USRDIR}"; then
+    if [ read = "$1" ]; then
+      : read mode < backgroundmode # special case, not currently used
+    else # common case: begin updating...
+      echo "$1" > backgroundmode
+    fi &&
+    if [ true = "${live_mode}" ]; then
+       echo "${IMAGE}" > bg_img
+       # set_bg eventually calls rox to change pinboard background.
+      "${APPDIR}/set_bg" "${IMAGE}" &&
+        touch bg_changed # just touch! for dialog_change_revert and on_signal
+    fi
+  fi
+  cd "${cwd}"
+#|set +x
+}
+export -f trigger_mode_button # bash
+
+CENTREBUTTON=$(make_mode_button Centre $OLDMODE)
+TILEBUTTON=$(make_mode_button Tile $OLDMODE)
+SCALEBUTTON=$(make_mode_button Scale $OLDMODE)
+STRETCHBUTTON=$(make_mode_button Stretch $OLDMODE)
+RADIOBUTTONS="$CENTREBUTTON
+$TILEBUTTON
+$SCALEBUTTON
+$STRETCHBUTTON"
+
+#20150503 Superseded by using <radiobutton active="true"> in make_mode_button()
+: << \IGNORED
 case $OLDMODE in
- Centre)
- RADIOBUTTONS="$CENTREBUTTON
- $TILEBUTTON
- $SCALEBUTTON
- $STRETCHBUTTON"
- ;;
- Tile)
+ Tile*)
  RADIOBUTTONS="$TILEBUTTON
  $CENTREBUTTON
  $SCALEBUTTON
  $STRETCHBUTTON"
  ;;
- Scale)
+ Scale*)
  RADIOBUTTONS="$SCALEBUTTON
  $CENTREBUTTON
  $TILEBUTTON
  $STRETCHBUTTON"
  ;;
- Stretch)
+ Stretch*)
  RADIOBUTTONS="$STRETCHBUTTON
  $CENTREBUTTON
  $TILEBUTTON
  $SCALEBUTTON"
  ;;
+ Center*|Centre*|*) # Catchall
+ RADIOBUTTONS="$CENTREBUTTON
+ $TILEBUTTON
+ $SCALEBUTTON
+ $STRETCHBUTTON"
+ ;;
 esac
-if [ "$OLDIMAGE" = "" ]; then
-	OLDIMAGE="[none]"
-	DIR="/usr/share/backgrounds"
-else
-	DIR="`dirname $OLDIMAGE`"
-	[ "$DIR" = "$HOME/.pwidgets" ] && DIR=/usr/share/backgrounds
-fi
-echo "$OLDIMAGE" > $HOME/.config/wallpaper/bg_img
+IGNORED
+
+case "${OLDIMAGE}" in
+ "")
+  OLDIMAGE="[none]"
+  DIR=/usr/share/backgrounds
+ ;;
+ /usr/share/backgrounds/.[0-9]*/*)
+  DIR=/usr/share/backgrounds # do not enter aspect-ratio folders
+ ;;
+ *)
+  DIR=${OLDIMAGE%/*}
+  [ "$DIR" = "$HOME/.pwidgets" ] && DIR=/usr/share/backgrounds
+ ;;
+esac
+echo "$OLDIMAGE" > "${USRDIR}/bg_img"
 PREVDIR="`pwd`"
 
 # Reset mode
-echo $OLDMODE > $HOME/.config/wallpaper/backgroundmode
+echo $OLDMODE > "${USRDIR}/backgroundmode"
 
 #add button for sidebar if installed
 if [ -f $HOME/.pwidgets/pwidgetsrc ];then #icon fix 20110624, also in the main xml code for "edit" and "view"
@@ -189,30 +341,162 @@ if [ -f $HOME/.pwidgets/pwidgetsrc ];then #icon fix 20110624, also in the main x
 fi
 
 #show image #20110624 01micko, requires new gtkdialog
-CURRENTIMG="`cat $HOME/.config/wallpaper/bg_img`"
-ln -sf $CURRENTIMG /tmp/current_wallpaper_selection.jpg
+#CURRENTIMG="`cat $HOME/.config/wallpaper/bg_img`"
+#ln -sf $CURRENTIMG /tmp/current_wallpaper_selection.jpg
+
+# Supported image type gate. Implement new type here then:
+# - In functions swapimagefunc, status_bar_msg
+# - In scripts set_bg (i.e., BMP), background_reshape (Stretch mode)
+is_supported_image() # $1-filepath
+{
+#|echo >&2 "
+#|---------- is_supported_image $*"
+#|set -x
+  # IMPORTANT: image must be a regular file, no links!, no dirs, etc.
+  [ -f "$1" ] || return 1
+  case "$1" in
+  *.jpg|*.jpeg|*.png|*.gif|*.tif|*.tiff|*.bmp|*.background|*.JPG|*.JPEG|*.PNG|*.GIF|*.TIF|*.TIFF|*.BMP)
+     return 0 ;;
+  *) return 1 ;;
+  esac
+}
+export -f is_supported_image # bash
 
 swapimagefunc()
 {
-	rm -f /tmp/current_wallpaper_selection.jpg
-	ISIMAGE="`echo $IMAGE|grep -iE 'jpg$|png$|jpeg$|gif|JPEG$|JPG$|tiff$|background$'`"
-	if [ "$ISIMAGE" = "" ];then IMAGE="/usr/share/doc/puppylogo96.png" #if file is not an image
-	fi
-	ln -sf $IMAGE /tmp/current_wallpaper_selection.jpg
+#|set +x
+#|echo >&2 "
+#|---------- swapimagefunc"
+#|set -x
+ rm -f "${PREVIEWIMG}"
+ if ! is_supported_image "${IMAGE}"; then
+   [ -d "${IMAGE}" ] && IMAGE="${FOLDERPREVIEW}" || IMAGE="${NOIMAGEPREVIEW}"
+ fi
+ local imgname=${IMAGE##*/}
+ local preview=/usr/share/backgrounds/.preview/${imgname}.jpg # keep .jpg !
+ local tojpeg="pnmtojpeg -quality=60"
+ # Convert image format to jpg, which gtkdialog can display.
+ # Fail silently when the conversion utility is unavailable.
+ # Don't convert again if an up-to-date preview is already available;
+ # see also set_bg -clear.
+ mkdir -p "${preview%/*}" # hidden from dialog
+ if [ ! -f "${preview}" ] || test "${IMAGE}" -nt "${preview}"; then
+  case "${imgname}" in # ignore conversion errors (close stderr)
+    *.jpg|*.jpeg|*.JPG|*.JPEG) ln -sf "${IMAGE}" "${preview}" ;; # no convert
+    *.png|*.PNG) pngtopnm "${IMAGE}" | $tojpeg > "${preview}" ;;
+    *.gif|*.GIF) giftopnm "${IMAGE}" | $tojpeg > "${preview}" ;;
+    *.tif|*.tiff|*.TIF|*.TIFF) tifftopnm "${IMAGE}" | $tojpeg > "${preview}" ;;
+    *.bmp|*.BMP) bmptopnm "${IMAGE}" | $tojpeg > "${preview}" ;;
+    *.background) : ;; # don't know
+  esac 2>&-
+ fi
+ # catch conversion errors
+ [ -s "${preview}" ] && ln -sf "${preview}" "${PREVIEWIMG}" ||
+  ln -sf "${IMAGE}" "${PREVIEWIMG}" # if all else failed this display JPG only
 }
-export -f swapimagefunc
+export -f swapimagefunc # bash
 
-cd "$DIR"
+# Initialize preview widget with image of first chooser item.
+# Note: chooser widget groups directories first, so we follow suit.
+read IMAGE <<-EOF && [ "${IMAGE}" ] && swapimagefunc
+`ls -d1 --group-directories-first /usr/share/backgrounds/* | head -n 1`
+EOF
+
+get_app_name_version()
+{
+  local version=$(awk -v FS="=" '
+    /^VERSION=/ {
+      gsub(/[\x22\x27]/,"", $2)
+      print name, $2 # name and version
+      exit
+    }' "$APPDIR/functions")
+    echo -n "${APPDIR##*/} ${version}"
+}
+export APP_NAME_VERSION=$(get_app_name_version)
+
+#|# Debug: Emit pathname of current wallpaper preview file
+#|dbg_get_current_preview()
+#|{
+#|  local prw="$(readlink -e "${PREVIEWIMG}")" # keep readlink !
+#|  [ -n "${prw}" ] && echo -n "${prw}"
+#|}
+#|export -f dbg_get_current_preview # bash
+
+# Emit status, image meta data and basename of chooser list view selection
+status_bar_msg()
+{
+#|set +x
+#|    echo >&2 "
+#|-------------- status_bar_msg"
+#|set -x
+  local state meta topnm morfed img="${IMAGE}"
+  [ -n "${img}" ] || return 0
+  local prw="$(readlink -e "${PREVIEWIMG}")" # keep readlink for next line !
+  case "${prw}" in ${FOLDERPREVIEW}|${NOIMAGEPREVIEW}) img= ;; esac
+  case "${img}" in
+    *.jpg|*.jpeg|*.JPG|*.JPEG) topnm=jpegtopnm;;
+    *.png|*.PNG) topnm=pngtopnm;;
+    *.gif|*.GIF) topnm=giftopnm;;
+    *.tif|*.tiff|*.TIF|*.TIFF) topnm=tifftopnm;;
+    *.bmp|*.BMP) topnm=bmptopnm
+      morfed=jpg # tell the code below, on 'Apply' BMP morfs into JPG
+      ;;
+  esac
+  if [ -n "${topnm}" ]; then
+    # get image meta data
+    meta=$(2>&- $topnm "${img}" | 2>&- pamtopam | awk '
+      # decode pam header, refer man pam(5)
+      /^ENDHDR/ {exit}
+      NR>1 {h[$1]=$2}
+      END {printf "%dx%d %s %dx%d bit\n", h["WIDTH"], h["HEIGHT"],\
+            h["TUPLTYPE"], h["DEPTH"], log(1+h["MAXVAL"])/log(2)}
+      ')
+    case ${meta} in 0x0*) meta=${LOC_CORRUPTED_FILE} ;; esac
+    # get state
+    local cch mode cur fn x
+    { read mode; read cur; } << EOF
+    $(get_current_background)
+EOF
+    if [ -s "${STRETCHEDWPC}" ]; then
+      read cch < "${STRETCHEDWPC}"
+    else
+      case "${mode}" in Stretch*) cch=${cur} ;; esac
+    fi
+    # mark state=cached if a stretched image of selection is cached
+#|>&2 echo -e "prw:preview ${prw}\ncch:cached  ${cch}\ncur:current ${cur}\nimg:IMAGE   ${img}"
+    fn=${prw%.jpg}
+    [ -n "${morfed}" ] && fn="${fn%.*}.${morfed}"
+    fn=${fn##*/}
+    [ -f "${cch%/*}/${fn}" ] &&
+      state="${LOC_CACHED}${state:+, }${state}"
+    # mark state=mode if selection is the current background
+    if [ -n "${cur}" ]; then
+      case "${mode}" in
+        Stretch*) [ "${cur##*/}" = "${img##*/}" ] ;; # can compare basename only
+        *) [ "${cur}" = "${img}" ] ;;
+      esac && x=$(get_loc_mode_label ${mode}) &&
+      [ -n "$x" ] && state="${x%% *}${state:+, }${state}"
+    fi
+  else
+    echo -n "${APP_NAME_VERSION}" # fallback
+  fi
+  echo -n "${state}${state:+; }${meta}${meta:+; }${img##*/}"
+#|set +x
+}
+export -f status_bar_msg # bash
+
+#<window title=\"$LOC_MAIN\" icon-name=\"gtk-select-color\">
+cd "$DIR" &&
 export BG_DLG="
-<window title=\"$LOC_MAIN\" icon_name=\"preferences-desktop-wallpaper\">
+<window title=\"$LOC_MAIN\" image-name=\"$APPDIR/DirIcon16.png\">
  <vbox>
   <menubar>
    <menu>
     <menuitem stock=\"gtk-media-play\"label=\"$LOC_SLIDESHOW\">
-     <action>$APPDIR_ESC/slideshow -start \"\$IMAGE\" &</action>
+     <action>'$APPDIR/slideshow' -start \"\$IMAGE\" &</action>
     </menuitem>
     <menuitem stock=\"gtk-preferences\"label=\"$LOC_OPTIONS\">
-     <action>$APPDIR_ESC/functions -preferences &</action>
+     <action>'$APPDIR/functions' -preferences &</action>
     </menuitem>
     <separator></separator>
     <menuitem stock=\"gtk-quit\"label=\"$LOC_QUIT\">
@@ -222,7 +506,7 @@ export BG_DLG="
    </menu>
    <menu>
     <menuitem stock=\"gtk-about\">
-     <action>$APPDIR_ESC/functions -about</action>
+     <action>'$APPDIR/functions' -about</action>
     </menuitem>
     <label>$LOC_HELP</label>
    </menu>
@@ -234,18 +518,21 @@ export BG_DLG="
       <default>$DIR</default>
       <height>180</height><width>500</width>
       <variable>IMAGE</variable>
-      <action>$APPDIR_ESC/slideshow -stop</action>
-      <action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-      <action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-      <action signal=\"button-release-event\">swapimagefunc</action>
-      <action signal=\"button-release-event\" type=\"refresh\">PIXMAP</action>
+      <action when=\"update-preview\">swapimagefunc</action>
+      <action when=\"update-preview\">refresh:PIXMAP</action>
+      <action when=\"update-preview\">refresh:STATUSBAR</action>
+      <action when=\"update-preview\">trigger_mode_button read \$LIVE</action>
+      <action when=\"current-folder-changed\">IMAGE=/tmp swapimagefunc</action>
+      <action when=\"current-folder-changed\">refresh:PIXMAP</action>
+      <action when=\"current-folder-changed\">refresh:STATUSBAR</action>
+      <action when=\"current-folder-changed\">trigger_mode_button read false</action>
      </chooser>
      <frame $LOC_CURRENT_IMAGE>
       <hbox height-request=\"190\" homogeneous=\"true\">
        <pixmap>
         <height>180</height><width>270</width>
         <variable>PIXMAP</variable>
-        <input file>/tmp/current_wallpaper_selection.jpg</input>
+        <input file>${PREVIEWIMG}</input>
        </pixmap>
       </hbox>
      </frame>
@@ -253,66 +540,221 @@ export BG_DLG="
    </vbox>
    <vbox>
     <frame $LOC_MODE>
-     $RADIOBUTTONS
+     <checkbox tooltip-text=\"${LOC_LIVE_TOOLTIP}\">
+       <label>${LOC_LIVE}</label>
+       <variable>LIVE</variable>
+       <action>if true trigger_mode_button \$(get_mode_button) true</action>
+     </checkbox>
+     <frame>
+       $RADIOBUTTONS
+     </frame>
     </frame>
     <frame $LOC_ACTIONS>
-     <button>
+     <button tooltip-text=\"${LOC_APPLY_TOOLTIP}\">
       <label>$LOC_APPLY</label>
       <input file stock=\"gtk-apply\"></input>
-      <action>$APPDIR_ESC/slideshow -stop</action>
-      <action>$APPDIR_ESC/set_bg \"\$IMAGE\"</action>
-      <action>echo \"\$IMAGE\" > \$HOME/.config/wallpaper/bg_img</action>
-      <action>fixwidgets -wallpaper_setter &</action>
-      <action type=\"refresh\">TEXT</action>
+       <action>trigger_mode_button \$(get_mode_button) true</action>
+      <action> 2>&- mv -f \"${USRDIR}/restore\" \"${USRDIR}/restore-not\"</action>
+      <action>refresh:STATUSBAR</action>
+      <action>which fixwidgets >&- 2>&- && fixwidgets -wallpaper_setter &</action>
      </button>
-     <button>
+     <button tooltip-text=\"${LOC_CLEAR_TOOLTIP}\">
       <label>$LOC_CLEAR</label>
       <input file stock=\"gtk-clear\"></input>
-      <action>$APPDIR_ESC/slideshow -stop</action>
-      <action>$APPDIR_ESC/set_bg -clear</action>
-      <action type=\"refresh\">TEXT</action>
+      <action>'$APPDIR/slideshow' -stop</action>
+      <action>'$APPDIR/set_bg' -clear</action>
+      <action>refresh:STATUSBAR</action>
      </button>
      $SIDEBAR
-     <button>
+     <button tooltip-text=\"${LOC_EDIT_TOOLTIP}\">
      <label>$LOC_EDIT</label>
       <input file stock=\"gtk-edit\"></input>
-      <action>$IMGEDITOR \$IMAGE &</action>
+      <action>'$IMGEDITOR' \"\$IMAGE\" &</action>
      </button>
-     <button height-request=\"30\">
+     <button height-request=\"30\" tooltip-text=\"${LOC_VIEW_TOOLTIP}\">
       <label>$LOC_VIEW</label>
       <input file>\"/usr/share/pixmaps/mini-icons/mini-eye.xpm\"</input>
-      <action>$VIEWER \$IMAGE &</action>
+      <action>'$VIEWER' \"\$IMAGE\" &</action>
      </button>
-     <button>
+     <button tooltip-text=\"${LOC_FILER_TOOLTIP}\">
       <label>$LOC_FILER</label>
       <input file stock=\"gtk-directory\"></input>
-      <action>dirname \$IMAGE > \$HOME/.config/wallpaper/bgdir</action>
-      <action>$APPDIR/functions -filer</action>
+      <action>dirname \"\$IMAGE\" > \"\${USRDIR}/bgdir\"</action>
+      <action>'$APPDIR/functions' -filer</action>
      </button>
-     <button>
+     <button tooltip-text=\"${LOC_CLOSE_TOOLTIP}\">
       <input file stock=\"gtk-close\"></input>
       <label>$LOC_CLOSE</label>
+      <action condition=\"command_is_true(dialog_change_revert && echo true)\">EXIT:revert</action>
      </button>
     </frame>
    </vbox>
   </hbox>
+  <statusbar has-resize-grip=\"false\">
+   <variable>STATUSBAR</variable>
+   <default>${APP_NAME_VERSION}</default>
+   <input>status_bar_msg</input>
+   <sensitive>true</sensitive>
+  </statusbar>
  </vbox>
+ <action signal=\"delete-event\">dialog_change_revert abort &</action>
  <action signal=\"hide\">exit:Exit</action>
 </window>
 "
 
-$GTKDIALOG --program BG_DLG
+# Prompt user about restoring initial background picture. Runs on exit.
+# If a slideshow did run let user choose between initial picture and last slide.
+# If a slideshow is active show infobox and keep the show running in the bg.
+dialog_change_revert()
+{
+#|set +x
+#|echo >&2 "
+#|---------- dialog_change_revert $*"
+#|set -x
+  # return 1 to stay in main window
+  if ps | grep -q '[w]allslide'; then # sic [w]al...
+    # On exit keep an active slideshow running - feature.
+    # When it happens, the background can't revert to its initial picture.
+    dialog_ok_cancel "${LOC_ACTIVE_SLIDESHOW}" || return 1 # back to main
+    return 0 # no revert and exit app
+  fi
+  # Here slideshow is inactive so the background can revert.
+  local res=0
+  local cwd=${PWD} # bash
+  cd "${USRDIR}" &&
+  # if user did not 'Apply' changes
+  if [ -f restore ]; then
+    # and some changes did occur that the background can revert to
+    if [ restore -ot bg_changed -o restore -ot pb_default ]; then
+      case $1 in
+        # if user clicked [x] in the title bar or app got signal
+        abort) dialog_ok_cancel "${LOC_REVERT_ABORT}" no-cancel ;; # exit app
+        # else user clicked 'Close' button (clean exit request)
+        *)
+          # If bg_changed is empty the slideshow did not run.
+          # If bg_changed isn't empty it lists the last slide.
+          if [ -s bg_changed ]; then # if a slideshow did run
+            # prompt 1: either revert to X and exit or go back to main
+            if dialog_ok_cancel \
+              "${LOC_REVERT_SLIDESHOW} -- ${LOC_REVERT_CONFIRM_SLIDESHOW}"; then
+              # user clicked 'ok' to exit
+              # prompt 2: revert to either 'initial picture' or 'last slide'
+              if ! dialog_ok_cancel "${LOC_REVERT_INITIAL_OR_LAST_SLIDE}" \
+                "${LOC_REVERT_INITIAL}~~~${LOC_REVERT_LAST_SLIDE}"; then
+                # user clicked 'last slide'
+                cp bg_changed restore && sleep 1 && touch bg_changed
+                # slept 1 because [ f1 -ot f2 ] minimum resolution = 1 second
+                # revert to last slide and exit app
+              fi
+              # else user clicked 'initial picture', revert to it and exit
+            else
+              res=1 # go back to main
+            fi
+          else # user clicked 'Close', there were changes but no slideshow
+            # prompt 2: revert to 'initial picture' and exit or go back to main
+            if ! dialog_ok_cancel \
+              "${LOC_REVERT_CHANGES} -- ${LOC_REVERT_CONFIRM}"; then
+              res=1 # go back to main
+            fi
+            # else revert to initial picture and exit
+          fi
+      esac
+    fi
+  fi
+  cd "${cwd}"
+  return ${res} # 0 exit app | 1 go back to main
+}
+export -f dialog_change_revert # bash
 
-cd "$PREVDIR"
+dialog_ok_cancel() # $1-prompt [$2-'no-cancel'|button1-label'~~~'button2-label]
+{
+#|set +x
+#|echo >&2 "
+#|---------- dialog_ok_cancel"
+#|set -x
+  # return 1 to stay in main window
+  local label_ok label_cancel button_cancel
+  case "$2" in
+    *~~~*)
+      label_ok='><label>"   '"${2%~~~*}"'   "</label>'
+      label_cancel='><label>"   '"${2#*~~~}"'   "</label>'
+    ;;
+    *)
+      label_ok=' label="gtk-ok">'
+      label_cancel=' label="gtk-cancel">'
+  esac
+  case "$2" in
+    no-cancel) :
+    ;;
+    *) button_cancel='
+   <button use-stock="true"'"${label_cancel}"'
+    <action>EXIT:cancel</action>
+   </button>'
+  esac
+# Enter key is equivalent to clicking OK, refer topic "Press 'Enter' instead of"
+# http://murga-linux.com/puppy/viewtopic.php?t=38608
+# ESC key cancels, topics "Hotkeys" and "Hotkey", same thread.
+  eval $(${GTKDIALOG} --center --stdin << EOF
+<window title="$LOC_MAIN" icon_name="preferences-desktop-wallpaper">
+ <vbox>
+  <vbox border-width="10">
+   <text>
+    <label>$1</label>
+   </text>
+  </vbox>
+  <hseparator></hseparator>
+  <hbox homogeneous="true">
+   <button can-default="true" has-default="true" use-stock="true"${label_ok}
+    <action>EXIT:ok</action>
+   </button>
+   ${button_cancel}
+  </hbox>
+ </vbox>
+ <action signal="key-press-event" condition="command_is_true([ \${KEY_RAW} = 0x9 ] && echo true)">EXIT:escape</action>
+</window>
+EOF
+  )
+  [ ok = "${EXIT}" ]
+}
+export -f dialog_ok_cancel # bash
 
+trap_with_arg()
+{
+  local sig func="$1"; shift
+  for sig; do
+    trap "${func} ${sig}" "${sig}"
+  done
+}
 
+on_signal() # $1-received-signal
+{
+#|set +x
+#|echo >&2 "
+#|---------- on_signal $1"
+#|set -x
+  trap - HUP INT QUIT TERM EXIT
+  local signal=$1 res=0 mode bg
+  cd "${USRDIR}" &&
+  # EXIT=revert is set in dialog_change_revert called by $BG_DLG
+  # EXIT=abort is set by window [x] button and caught by signal=delete-event
+  # signal INT is sent by terminal keyboard Ctrl+C (mostly debug)
+  if [ revert = "${EXIT}" -o abort = "${EXIT}" -o "${signal}" = INT ]; then
+    if [ -f restore ]; then
+#|stat restore bg_changed >&2
+      read mode bg < restore &&
+      if [ restore -ot bg_changed -o restore -ot pb_default ]; then
+          echo "${mode}" > backgroundmode &&
+          "${APPDIR}/set_bg" "${bg}" || res=1
+      fi
+    fi
+  fi
+  rm -f backgroundmode bg_img bg_changed restore FILER VIEWER EDITOR \
+    /tmp/wallpaper-radio* /tmp/wallpaper-screen*
+  cd "${PREVDIR}"
+  exit ${res}
+}
 
+trap_with_arg on_signal HUP INT QUIT TERM EXIT
 
-
-
-
-
-
-
-
+eval $($GTKDIALOG --program BG_DLG)
 

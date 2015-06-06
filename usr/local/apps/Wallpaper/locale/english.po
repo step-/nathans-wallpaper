@@ -8,7 +8,12 @@
 export LOC_CENTRE="Centre"
 export LOC_TILE="Tile"
 export LOC_SCALE="Scale"
-export LOC_STRETCH="Stretched"
+export LOC_STRETCH="Stretch"
+# tootips
+export LOC_CENTRE_TOOLTIP="Display image as is, centred on screen."
+export LOC_TILE_TOOLTIP="Checkerboard effect for small images."
+export LOC_SCALE_TOOLTIP="Proportionally enlarge/reduce to fit inside the screen."
+export LOC_STRETCH_TOOLTIP="Proportionally enlarge/reduce to completely fill the screen."
 
 # Main window title
 export LOC_MAIN="Desktop background"
@@ -27,9 +32,12 @@ export LOC_HELP="Help"
 # Image file frame
 export LOC_FILE_FRAME="Image file"
 # Current image frame #now preview
-export LOC_CURRENT_IMAGE="Preview"
+export LOC_CURRENT_IMAGE="Preview selected image"
 # Mode frame
 export LOC_MODE="Mode"
+# Mode sub-frame
+export LOC_LIVE="Live"
+export LOC_LIVE_TOOLTIP="Preview directly on the Desktop."
 
 #######################################
 # Actions frame
@@ -40,6 +48,13 @@ export LOC_APPLY="Apply"
 export LOC_CLEAR="Clear"
 export LOC_FILER="Filer"
 export LOC_CLOSE="Close"
+# tooltips
+export LOC_APPLY_TOOLTIP="Commit current background to show after exit."
+export LOC_CLEAR_TOOLTIP="Clear background and selected image cache."
+export LOC_EDIT_TOOLTIP="Image editor."
+export LOC_VIEW_TOOLTIP="Image viewer."
+export LOC_FILER_TOOLTIP="Browse current folder."
+export LOC_CLOSE_TOOLTIP="Leave application."
 
 #######################################
 # About window
@@ -53,13 +68,33 @@ export LOC_ABOUT_TEXT="     Written October, 2006 by Nathan Fisher especially fo
 #
 export LOC_OPTIONS_WINDOW="Wallpaper: options"
 export LOC_SLIDESHOW_FRAME="Slideshow"
-export LOC_DELAY="Slideshow delay (seconds)"
+export LOC_DELAY="Delay"
+export LOC_DELAY_TOOLTIP="Delay before next slide in seconds."
+export LOC_RANDOM_IMAGE="Shuffle"
+export LOC_RANDOM_IMAGE_TOOLTIP="Shuffle list of pictures before starting."
 export LOC_CHOOSE="Choose"
-export LOC_DELAY1="Slideshow delay"
-export LOC_DIR="Slideshow directory"
+export LOC_DIR="Image source directory"
 export LOC_DEFAULTS="Default programs"
 export LOC_FILEMANAGER="File manager"
 export LOC_EDITOR="Image editor"
 export LOC_VIEWER="Image viewer"
 
+#######################################
+# Status bar
+#
+export LOC_CACHED="Cached"
+export LOC_CORRUPTED_FILE="FILE IS CORRUPTED"
+
+#######################################
+# Exit dialog
+#
+export LOC_ACTIVE_SLIDESHOW="The slideshow is active. If you click OK it will continue playing. Do you want to exit and let the background keep changing?"
+export LOC_REVERT_ABORT="The background will revert to its initial picture. To permanently show the changed picture, next time exit the application by clicking the main 'Close' button."
+export LOC_REVERT_CHANGES="If you click OK to leave now the background will revert to its initial picture. To permanently show the current picture click 'Cancel' to go back then click the 'Apply' button."
+export LOC_REVERT_SLIDESHOW="If you click OK to leave now the background will revert. To keep showing the current picture click 'Cancel' to go back then click the 'Apply' button."
+export LOC_REVERT_CONFIRM="Do you want to leave now and undo the current background?"
+export LOC_REVERT_CONFIRM_SLIDESHOW="Do you want to leave now? -- If you want the last slideshow picture click 'OK'."
+export LOC_REVERT_INITIAL="Initial background"
+export LOC_REVERT_LAST_SLIDE="Last slide"
+export LOC_REVERT_INITIAL_OR_LAST_SLIDE="Choose background"
 

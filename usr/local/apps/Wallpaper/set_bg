@@ -1,42 +1,116 @@
-#!/bin/sh
+#!/bin/dash
+
+#|set +x
+#|echo     " >&2
+#|---------- set_bg $(date)"
+#|set -x
 
 # Determine the path to this application.
-CURDIR="`pwd`"
-APPDIR=`dirname "$0"`
-cd "${APPDIR}"
-APPDIR="`pwd`"
-cd "${CURDIR}"
+APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
+# Emit pathname of current wallpaper preview file
+get_current_preview()
+{
+  local PREVIEWIMG=/tmp/current_wallpaper_selection.jpg
+  local prw="$(readlink -e "${PREVIEWIMG}")" # keep readlink !
+  [ -n "${prw}" ] && echo -n "${prw}"
+}
+
+mkdir -p ${HOME}/.config/wallpaper
 if [ "$1" = "-clear" ];then
- cat $HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default | grep -v '<backdrop' > $HOME/.config/wallpaper/pb
- mv -f $HOME/.config/wallpaper/pb $HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default
- rox -p=default
- echo "[none]" > $HOME/.config/wallpaper/bg_img
+ x=$HOME/.config/rox.sourceforge.net/ROX-Filer
+ y=$HOME/.config/wallpaper
+ grep -v '<backdrop' $x/pb_default > $y/pb &&
+ mv -f $y/pb $x/pb_default &&
+ rox -p $x/pb_default
+ # remove cached copies of current wallpaper
+ if read x < $y/bg_img; then
+  x=${x##*/}
+  find /usr/share/backgrounds/.[0-9]* -name "${x}" -exec rm -f '{}' \; 2>&-
+ fi
+ # remove cached copies of currently previewed wallpaper
+ x=$(get_current_preview)
+ x=${x##*/}; x=${x%.jpg}
+ find /usr/share/backgrounds/.[0-9]* -name "$x" -exec rm -f '{}' \; 2>&-
+ # remove preview of current wallpaper
+ rm -f "/usr/share/backgrounds/.preview/$x.jpg"
+
+ echo "[none]" > $y/bg_img
  exit
 fi
 
-MODE="`cat $HOME/.config/wallpaper/backgroundmode`"
-[ "$MODE" = "" ] && MODE="Scale"
-[ "$MODE" = "Centred" ] && MODE="Centre"
-[ "$MODE" = "Scaled" ] && MODE="Scale"
+# $1 ::= [mode':']image-file-path; mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'
+MODE=${1%:*}; ifp=${1#*:}; [ "${MODE}" = "${ifp}" ] && MODE=
+
+# accept non-empty image file only
+[ -s "${ifp}" ] || exit 1 # -z=!-n < -f < -s
+
+if [ -z "${MODE}" ]; then
+  [ ! -s ${HOME}/.config/wallpaper/backgroundmode ] &&
+    echo Centre > ${HOME}/.config/wallpaper/backgroundmode # sensible catchall
+  read MODE < ${HOME}/.config/wallpaper/backgroundmode
+fi
+# convert MODE to UK-spelling infinitive verb for rox --RPC
+case $MODE in
+ Scale*) MODE=Scale  ;;
+ Stretch*) MODE=Stretch ;;
+ Tile*) MODE=Tile ;;
+ Center*|Centre*|*) MODE=Centre ;; # sensible catchall
+esac
+
+# Windows BMP support
+bmptojpg () # $1-bmp-image-path
+{
+  local name out
+  name=${1##*/}; name=${name%.*}
+  out="/usr/share/backgrounds/${name}.jpg"
+  # Convert $1 BMP to $out JPG. Note: we re-use an existing, non-empty $out.
+  # If $out exists there's a slim chance that it isn't the jpeg-ed $1, but
+  # we ignore this unlikely case.
+  [ ! -s "${out}" ] && bmptopnm "$1" | pnmtojpeg -quality=85 > "${out}"
+  [ -s "${out}" ] && echo -n "${out}" # signal success
+}
+
+#20150503 ROX-Filer can't convert BMP, so we do it here
+case ${ifp} in *.bmp|*.BMP) NEWIMAGE=$(bmptojpg "${ifp}");; *) NEWIMAGE= ;; esac
+# NEWIMAGE is non-null iff conversion succeeded
 
 #w482 BK now have script that truncates an image vertically so that it has the right dimensions
 #for a widescreen...
-if [ -x /usr/sbin/background_reshape ];then #legacy compatibility
- if [ "$MODE" = "Stretch" ];then
-  /usr/sbin/background_reshape ${1}
+#140101 background_reshape has changed...
+[ -z "${NEWIMAGE}" ] && NEWIMAGE="${ifp}"
+if [ "$MODE" = "Stretch" ]; then
+ #truncated image is created, in a subdirectory, ex: /usr/share/backgrounds/.177/image.jpg
+ # where "177" is the screen aspect ratio, as a percentage.
+#|echo >&2 "======== set_bg calls ${APPDIR}/background_reshape" "${NEWIMAGE}"
+ "${APPDIR}/background_reshape" "${NEWIMAGE}"
+ RETVAL=$?
+ if [ $RETVAL -eq 10 -o $RETVAL -eq 11 ];then # legacy compatibility
+  read NEWIMAGE < /tmp/qwallpaper_reshaped
+ else
+  exit 1 # exit without changing background on reshaping error
  fi
 fi
 
+if which rox >&- 2>&-; then
+#tell rox to use new bg image, note this will also write to ${HOME}/Choices/ROX-Filer/PuppyPin
+# Careful! If ROX-Filer doesn't grok the $NEWIMAGE file type it will actually
+# delete $NEWIMAGE (with a dialog window that says 'removing the backdrop').
 rox --RPC << EOF
 <?xml version="1.0"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
  <env:Body xmlns="http://rox.sourceforge.net/SOAP/ROX-Filer">
   <SetBackdrop>
-   <Filename>$1</Filename>
-   <Style>$MODE</Style>
+   <Filename><![CDATA[${NEWIMAGE}]]></Filename>
+   <Style>${MODE}</Style>
   </SetBackdrop>
  </env:Body>
 </env:Envelope>
 
 EOF
+else
+ true
+ #need to use xsetroot or something.
+fi
+
+###END###

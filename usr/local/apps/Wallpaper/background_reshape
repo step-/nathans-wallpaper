@@ -1,0 +1,218 @@
+#!/bin/dash
+#Barry Kauler 2009
+#the background image is at /usr/share/backgrounds/default.jpg
+#this may have the wrong dimensions to suit either a 'normal' or a 'widescreen' monitor.
+#for now, keep this simple, assume image is suitable for normal screen, truncate vertically
+#if widescreen.
+#v424 fix maths.
+#v424 move ORIGINAL-* images to /usr/share/backgrounds_original
+#110831 support png images.
+#111013 Karl Godt: 'dc' can return , instead of . in numeric values, for non-english locale.
+#130326 Karl Godt: Added MODE option to be able to switch between math by BK and math by /bin/sh.
+#130327 Double Quotes around Files and Directories to support Spaces.
+#130327 Karl Godt: Logfile is /tmp/backg.log.
+#130327 wjaguar: Rewrote unnecessarily tortuous math & string handling
+#140101 BK: leave originals in /usr/share/backgrounds. create subdirs for truncated images. see also set_bg, .xinitrc.
+#140107 fix if image not in subdir.
+#150503 step: see https://github.com/step-/nathans-wallpaper/
+
+#|set -x
+#|LOG=/tmp/backg.log
+#|exec 1>$LOG 2>&1
+
+#|set +x
+#|echo >&2 "
+#|---------- background_reshape"
+#|set -x
+
+#get current image...
+#this will be: /usr/share/backgrounds/<aspect ratio>/<image file>
+curIMAGEFILE=
+if [ -f "$1" ]; then
+  curIMAGEFILE="$1"
+else
+  [ ! "$curIMAGEFILE" ] && [ -f ${HOME}/Choices/ROX-Filer/PuppyPin ] && curIMAGEFILE="`sed -n '/<backdrop/s/[^>]\+>\([^<]\+\).*/\1/p' ${HOME}/Choices/ROX-Filer/PuppyPin`"
+  [ ! "$curIMAGEFILE" ] && [ -s ${HOME}/.config/wallpaper/bg_img ] && read curIMAGEFILE < ${HOME}/.config/wallpaper/bg_img
+  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`ls -1 /usr/share/backgrounds/default.* | head -n 1`"
+  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`ls -1 /usr/share/backgrounds/*.jpg | head -n 1`"
+fi
+IMAGEBASE=${curIMAGEFILE##*/}
+#|echo >&2 IMAGEBASE=${IMAGEBASE}
+
+#20150520 step- Next line dups all files from off-base slideshow folders. Don't.
+#[ ! -f "/usr/share/backgrounds/${IMAGEBASE}" ] && cp -f "$curIMAGEFILE" /usr/share/backgrounds/ #precaution.
+
+IFS=' x+' read a ROOTHORIZ ROOTVERT a << EOF
+$(xwininfo -root | grep ' \-geometry ')
+EOF
+
+#create subdir for truncated images...
+ASPECTRATIO=.$(( $ROOTHORIZ * 100 / $ROOTVERT )) #as a percentage. ex: 1280x800 screen is 160%
+mkdir -p /usr/share/backgrounds/${ASPECTRATIO}
+
+#20150520 step+
+imgIN="${curIMAGEFILE}"
+imgOUT="/usr/share/backgrounds/${ASPECTRATIO}/${IMAGEBASE}"
+
+if [ -s "${imgOUT}" ]; then
+#| echo >&2 "Image is already cached
+#| ${imgOUT}"
+ echo "${imgOUT}" > /tmp/qwallpaper_reshaped
+ #tell set_bg this is the one to use.
+ exit 10 # OK
+fi
+
+case "${IMAGEBASE}" in
+   *.jpg|*.jpeg|*.JPG|*.JPEG) IMAGEPNM=jpegtopnm
+	PNMIMAGE="pnmtojpeg -quality=85" ;;
+   *.png|*.PNG) IMAGEPNM=pngtopnm
+	PNMIMAGE=pnmtopng ;;
+   *.gif|*.GIF) IMAGEPNM=giftopnm
+        PNMIMAGE=pamtogif ;;
+   *.tif|*.tiff|*.TIF|*.TIFF) IMAGEPNM=tifftopnm
+	PNMIMAGE=pnmtotiff ;;
+   *.bmp|*.BMP) IMAGEPNM=bmptopnm
+	PNMIMAGE="pnmtojpeg -quality=85" ;;
+   *) echo >&2 "$0: Unsupported image conversion .${IMAGEBASE##*.}"
+	exit 4 ;;
+esac
+
+# Safety check:
+# test exist($IMAGEPNM,$PNMIMAGE,$PAMCUT) where PAMCUT firstOf(pamcut,pnmcut)
+{ read a; read b; read PAMCUT; read d; } << EOF
+$(which "${IMAGEPNM}" "${PNMIMAGE%% *}" pamcut pnmcut 2>&-)
+EOF
+[ -n "$a" -a -n "$b" -a -n "${PAMCUT}" ] || {
+  echo >&2 "$0: Install ${IMAGEPNM}, ${PNMIMAGE%% *}, pamcut/pnmcut from netpbm"
+  exit 5
+}
+
+# Get image dimensions by reading just the minimum necessary data.
+get_image_dims() # $1-image-path
+{
+#|set +x
+#|echo >&2 "
+#|---------- get_image_dims $1"
+#|set -x
+  local height IFS
+  2>&- ${IMAGEPNM} "$1" | pamfile 2>&1 |
+  while read line; do
+    if [ "${line}" != "${line#*stdin:}" ]; then # grep -F 'stdin:'
+      IFS=,
+      set -- ${line}
+      IFS=" "
+      set -- $2
+      # return width height image-aspect-ratio-pct
+      echo $1 $3 $(( $1 * 100 / $3 ))
+      break
+    fi
+  done
+#|set +x
+}
+
+# Legacy reshaping method; augmented with vertical reshaping.
+image_cut() # $1-image-in $2-image-out
+{
+#|set +x
+#|echo >&2 "
+#|---------- image_cut $(date)"
+#|set -x
+local IMAGEHORIZ IMAGEVERT ratio
+#read IMAGEHORIZ a IMAGEVERT a << EOF
+#$(2>&- ${IMAGEPNM} "$1" | pamfile 2>&1 | grep -F 'stdin:' | cut -f 2 -d ',')
+read IMAGEHORIZ IMAGEVERT ratio << EOF
+$(get_image_dims "$1")
+EOF
+[ -z "${IMAGEHORIZ}" ] && return 1 # not an image or corrupted image
+
+#v423 some math gymnastics involved here..
+local IMGVERTSCALED=$(( ( $ROOTHORIZ * $IMAGEVERT ) / $IMAGEHORIZ ))
+local NEWVERT=$(( ( $IMAGEHORIZ * $ROOTVERT ) / $ROOTHORIZ )) #v424 fix.
+local IMGHORIZSCALED=$(( ( $ROOTVERT * $IMAGEHORIZ ) / $IMAGEVERT ))
+local NEWHORIZ=$(( ( $IMAGEVERT * $ROOTHORIZ ) / $ROOTVERT ))
+
+#this method cuts equal amounts from top and bottom...
+if [ "$NEWVERT" -gt "0" ] && [ $NEWVERT -lt $IMAGEVERT ] #precaution
+then
+	local CUTVERT=$(( $IMAGEVERT - $NEWVERT ))
+	2>&- $IMAGEPNM "$1" |
+		$PAMCUT -left=0 -top=$(( $CUTVERT / 2 )) -height=$NEWVERT |
+		$PNMIMAGE 2>/dev/null > "$2" ||
+		return 1 # explicit
+elif [ "$NEWHORIZ" -gt "0" ] && [ $NEWHORIZ -lt $IMAGEHORIZ ]; then
+# this method cuts equal amounts from left and right
+	local CUTHORIZ=$(( $IMAGEHORIZ - $NEWHORIZ ))
+	2>&- $IMAGEPNM "$1" |
+		$PAMCUT -top=0 -left=$(( $CUTHORIZ / 2 )) -width=$NEWHORIZ |
+		${PNMIMAGE} 2>/dev/null > "$2" ||
+		return 1 # explicit
+fi
+}
+
+# New reshaping method.
+# This method scales image up/down filling horizontally and vertically from
+# center. It subsumes the legacy, augmented method and is to be preferred.
+image_scale() # $1-image-in $2-image-out
+{
+#|echo >&2 "
+#|---------- image_scale $(date)"
+#|set -x
+  which pamscale pamcomp >/dev/null 2>&1 || return 1 # fall back to image_cut()
+  local underlay=$(make_screen_image ${ROOTHORIZ} ${ROOTVERT})
+  2>&- ${IMAGEPNM} "$1" |
+    pamscale -xyfill ${ROOTHORIZ} ${ROOTVERT} |
+    pamcomp -align center -valign middle - "${underlay}" |
+    ${PNMIMAGE} 2>/dev/null > "$2" ||
+    return 1 # explicit
+#|set +x
+}
+
+# Make/cache a screen-size black image.
+make_screen_image() # $1-width $2-height
+{
+#|set +x
+#|echo >&2 "
+#|---------- make_screen_image"
+  local outf=/tmp/wallpaper-screen-$1-$2.pnm
+  if [ ! -s "${outf}" ]; then
+    # generate file
+    cat | pnmtile $1 $2 > "${outf}" <<\EOF
+P1
+24 8
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+EOF
+  fi
+  echo -n "${outf}"
+}
+
+# Debug
+#|(
+#|echo -n "image scale: "; rm -f "${imgOUT}" &&
+#|  image_scale "${imgIN}" "${imgOUT}" && get_image_dims "${imgOUT}" &&
+#|echo -n "image_cut:   "; rm -f "${imgOUT}" &&
+#|  image_cut "${imgIN}" "${imgOUT}" && get_image_dims "${imgOUT}" &&
+#|rm -f "${imgOUT}"
+#|) >&2
+
+# Reshape image using new method if possible.
+image_scale "${imgIN}" "${imgOUT}" || image_cut "${imgIN}" "${imgOUT}"
+# image_scale and image_cut output an empty $imgOUT file on errors.
+
+# if empty file or #140107 fix if image not in subdir
+if [ -s "${imgOUT}" ]; then
+  echo "${imgOUT}"
+  exit 11 # OK
+else
+  rm -f "${imgOUT}"
+  echo >&2 "$0: Error(s) while reshaping '${imgIN}'"
+  exit 6 # error
+fi > /tmp/qwallpaper_reshaped #set_bg will read this.
+
+###END###

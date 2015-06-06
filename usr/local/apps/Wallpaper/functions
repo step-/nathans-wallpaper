@@ -1,51 +1,50 @@
-#!/bin/sh
+#!/bin/dash
 
 # Determine the path to this application.
-CURDIR="`pwd`"
-APPDIR=`dirname "$0"`
-cd "${APPDIR}"
-APPDIR="`pwd`"
-cd "${CURDIR}"
+APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
-VERSION="0.6.3"
+VERSION="0.7.0"
 
 # Make sure working space and files are in place
 [ ! -d $HOME/.config/wallpaper ] && mkdir $HOME/.config/wallpaper
-PREFS="$HOME/.config/wallpaper/preferences"
+export PREFS="$HOME/.config/wallpaper/preferences"
 [ ! -f $PREFS ] && touch $PREFS
 . $PREFS
-[ "$INT" = "" ] && echo 'INT="15"' >> $PREFS
-[ "$SLIDEDIR" = "" ] && echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
-[ "$FILER" = "" ] && echo 'FILER="defaultfilemanager"' >> $PREFS
-[ "$VIEWER" = "" ] && echo 'VIEWER="defaultimageviewer"' >> $PREFS
-[ "$IMGEDITOR" = "" ] && echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
+[ "$INT" ] || echo 'INT="15"' >> $PREFS
+[ "$RANDOM_IMAGE" ] || echo 'RANDOM_IMAGE="false"' >> $PREFS
+[ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
+[ "$FILER" ] || echo 'FILER="defaultfilemanager"' >> $PREFS
+[ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
+[ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
 . $PREFS
 echo $FILER > $HOME/.config/wallpaper/FILER
 echo $VIEWER > $HOME/.config/wallpaper/VIEWER
 echo $IMGEDITOR > $HOME/.config/wallpaper/EDITOR
 
 # Get translations
-ENVIRONMENT_LANG=`echo $LANG | sed "s/\(..\).*/\1/"` #detect environment language 
-case $ENVIRONMENT_LANG in
-	de)	export LANGUAGE="german" ;;
-	en)	export LANGUAGE="english" ;;
-	es)	export LANGUAGE="spanish" ;;
-	fr)	export LANGUAGE="french" ;;
-	it)	export LANGUAGE="italian" ;;
-	nb)	export LANGUAGE="norwegian" ;; #translation is norwegian bokmål
-	nl)	export LANGUAGE="dutch" ;;
-	nn)	export LANGUAGE="norwegian" ;; #Use norwegian bokmål, since there is no norwegian nynorsk
-	ru)	export LANGUAGE="russian" ;;
+#LANG=de_DE.UTF-8 # full example
+case "${LANG}" in
+	de*)	export LANGUAGE="german" ;;
+	en*)	export LANGUAGE="english" ;;
+	es*)	export LANGUAGE="spanish" ;;
+	fr*)	export LANGUAGE="french" ;;
+	it*)	export LANGUAGE="italian" ;;
+	nb*)	export LANGUAGE="norwegian" ;; #translation is norwegian bokmål
+	nl*)	export LANGUAGE="dutch" ;;
+	nn*)	export LANGUAGE="norwegian" ;; #Use norwegian bokmål, since there is no norwegian nynorsk
+	ru*)	export LANGUAGE="russian" ;;
 	*)	export LANGUAGE="english" ;; #english for contries without translation
 esac
-. $APPDIR/locale/english.po #always run to fill gaps in translation
-[ -f "$APPDIR/locale/${LANGUAGE}.po" ] && . $APPDIR/locale/${LANGUAGE}.po 2> /dev/null
+# step: test of locale sub-domain
+[ -programchooser = "$1" ] && subdir=/programchooser
+. "$APPDIR$subdir/locale/english.po" #always run to fill gaps in translation
+[ -f "$APPDIR$subdir/locale/${LANGUAGE}.po" ] && . "$APPDIR$subdir/locale/${LANGUAGE}.po" 2> /dev/null
 
 ### begin About ###
 
 about_wallpaper() {
 export ABOUT_DLG="
-<window title=\"$LOC_ABOUT_WINDOW\" icon_name=\"gtk-about\" window_position=\"2\">
+<window title=\"$LOC_ABOUT_WINDOW\" icon-name=\"help-about\" window_position=\"2\">
  <vbox>
   <text use_markup=\"true\">
    <label>\"<b>Wallpaper-$VERSION</b>\"</label>
@@ -64,7 +63,7 @@ export ABOUT_DLG="
  </vbox>
 </window>
 "
-$GTKDIALOG --program ABOUT_DLG &
+${GTKDIALOG:-gtkdialog} --program ABOUT_DLG &
 }
 
 ### end About ###
@@ -72,27 +71,32 @@ $GTKDIALOG --program ABOUT_DLG &
 ## begin Preferences ###
 
 wallpaper_preferences() {
-echo $INT > $HOME/.config/wallpaper/int
+  local checkbox_random
+  which shuf >/dev/null 2>&1 && checkbox_random="
+    <checkbox tooltip-text=\"${LOC_RANDOM_IMAGE_TOOLTIP}\">
+     <label>${LOC_RANDOM_IMAGE}</label>
+     <variable>RANDOM_IMAGE</variable>
+     <input>echo ${RANDOM_IMAGE}</input>
+    </checkbox>"
 
 export PREFS_DLG="
-<window title=\"$LOC_OPTIONS_WINDOW\" icon_name=\"gtk-preferences\">
+<window title=\"$LOC_OPTIONS_WINDOW\" icon-name=\"gtk-preferences\">
  <vbox>
   <frame $LOC_SLIDESHOW_FRAME>
-   <text>
-    <label>$LOC_DELAY</label>
-   </text>
-   <hbox>
-    <entry editable=\"false\">
-     <input>cat $HOME/.config/wallpaper/int</input>
-     <variable>INT</variable>
-    </entry>
-    <button>
-     <label>$LOC_CHOOSE</label>
-     <action>Xdialog --stdout --rangebox \"$LOC_DELAY\" 0 0 1 60 $INT > $HOME/.config/wallpaper/int</action>
-     <action type=\"refresh\">INT</action>
-    </button>
+   <hbox space-expand=\"false\" space-fill=\"false\">
+    <hbox space-expand=\"false\" space-fill=\"false\"> 
+     <text>
+      <label>$LOC_DELAY</label>
+     </text>
+     <hbox space-expand=\"true\" space-fill=\"true\"><text><label>\"\"</label></text></hbox>
+     <spinbutton width-chars=\"6\" xalign=\"1\" tooltip-text=\"${LOC_DELAY_TOOLTIP}\" range-min=\"1\" range-max=\"86400\" range-value=\"$INT\">
+      <variable>INT</variable>
+     </spinbutton>
+    </hbox>
+    <hbox space-expand=\"true\" space-fill=\"true\"><text><label>\"\"</label></text></hbox>
+    $checkbox_random
    </hbox>
-   <text>
+   <text xalign=\"0\">
     <label>$LOC_DIR</label>
    </text>
    <hbox>
@@ -107,50 +111,53 @@ export PREFS_DLG="
    </hbox>
   </frame>
   <frame $LOC_DEFAULTS>
-   <hbox>
-    <text>
+   <hbox space-expand=\"false\" space-fill=\"false\">
+    <text width-chars=\"20\" xalign=\"0\">
      <label>$LOC_FILEMANAGER</label>
     </text>
+    <hbox space-expand=\"true\" space-fill=\"true\"><text><label>\"\"</label></text></hbox>
     <entry>
      <variable>FILER</variable>
      <input>cat $HOME/.config/wallpaper/FILER</input>
     </entry>
     <button>
      <input file stock=\"gtk-open\"></input>
-     <action>programchooser \$FILER system-file-manager FileManager None > $HOME/.config/wallpaper/FILER</action>
+     <action>'$0' -programchooser \$FILER folder FileManager None > $HOME/.config/wallpaper/FILER</action>
      <action type=\"refresh\">FILER</action>
     </button>
    </hbox>
-   <hbox>
-    <text>
+   <hbox space-expand=\"false\" space-fill=\"false\">
+    <text xalign=\"0\">
      <label>$LOC_VIEWER</label>
     </text>
+    <hbox space-expand=\"true\" space-fill=\"true\"><text><label>\"\"</label></text></hbox>
     <entry>
      <variable>VIEWER</variable>
      <input>cat $HOME/.config/wallpaper/VIEWER</input>
     </entry>
     <button>
      <input file stock=\"gtk-open\"></input>
-     <action>programchooser \$VIEWER image-x-generic 2DGraphics None > $HOME/.config/wallpaper/VIEWER</action>
+     <action>'$0' -programchooser \$VIEWER zoom-fit-best '(2D)?Graphics' None > $HOME/.config/wallpaper/VIEWER</action>
      <action type=\"refresh\">VIEWER</action>
     </button>
    </hbox>
-   <hbox>
-    <text>
+   <hbox space-expand=\"false\" space-fill=\"false\">
+    <text xalign=\"0\">
      <label>$LOC_EDITOR</label>
     </text>
+    <hbox space-expand=\"true\" space-fill=\"true\"><text><label>\"\"</label></text></hbox>
     <entry>
      <variable>IMGEDITOR</variable>
      <input>cat $HOME/.config/wallpaper/EDITOR</input>
     </entry>
     <button>
      <input file stock=\"gtk-open\"></input>
-     <action>programchooser \$IMGEDITOR image-x-generic 2DGraphics Viewer > $HOME/.config/wallpaper/EDITOR</action>
+     <action>'$0' -programchooser \$IMGEDITOR edit-clear '(2D)?Graphics' Viewer > $HOME/.config/wallpaper/EDITOR</action>
      <action type=\"refresh\">IMGEDITOR</action>
     </button>
    </hbox>
   </frame>
-  <hbox>
+  <hbox homogenuous=\"true\">
    <button>
     <label>$LOC_CLOSE</label>
     <input file stock=\"gtk-close\"></input>
@@ -159,8 +166,13 @@ export PREFS_DLG="
  </vbox>
 </window>
 "
-$GTKDIALOG --program PREFS_DLG > $HOME/.config/wallpaper/preferences
-rm -f $HOME/.config/wallpaper/int
+${GTKDIALOG:-gtkdialog} --center --program PREFS_DLG > "${PREFS}.new"
+
+if ! grep -qiF 'exit="abort"' "${PREFS}.new"; then
+  grep -E '^\w+=' "${PREFS}.new" > "${PREFS}"
+fi
+rm -f "${PREFS}.new"
+
 }
 
 ### end Preferences ###
@@ -169,11 +181,106 @@ rm -f $HOME/.config/wallpaper/int
 
 open_filer() {
 . $PREFS
-DIR="`cat $HOME/.config/wallpaper/bgdir`"
+read DIR < $HOME/.config/wallpaper/bgdir
 exec $FILER "$DIR" &
 }
 
 ### end Filer ###
+
+### begin ProgramChooser
+
+programchooser()
+{
+# $1-default-program $2-stock-id-icon $3-include-category $4-exclude-category
+# include/exclude category is an awk pattern matching .desktop file categories
+# awk program further down reads all of /usr/share/applications/*
+echo "$1" > $HOME/.config/wallpaper/program
+# TODO remove test comment below
+#set -- "$1" gtk-apply Application "$4"
+${GTKDIALOG:-gtkdialog} --center --stdin << EOF > $HOME/.config/wallpaper/prgm
+ <window title="$LOC_MAIN" icon-name="document-open">
+  <vbox>
+   <hbox>
+    <entry>
+     <variable>PROGRAM</variable>
+     <input file>$HOME/.config/wallpaper/program</input>
+    </entry>
+    <button>
+     <input file stock="gtk-open"></input>
+     <action type="fileselect">PROGRAM</action>
+    </button>
+   </hbox>
+   <text>
+    <label>"$LOC_HINT"</label>
+   </text>
+   <tree exported_column="1" icon-name="$2">
+    <label>$LOC_HEADERS</label>
+    <width>400</width><height>200</height>
+    <variable>TREE</variable>
+$(
+LR=${LANG%.*} #ex:pt_BR
+L=${LANG%_*} #ex:pt
+L=de; LR=de # TODO REMOVE ME
+INCLUDE=$3
+EXCLUDE=$4
+awk '
+ BEGIN {RS="^~cannot~match~me~"}
+  {file[++n]=";"FILENAME"\n"$0} # slurp n input files
+ END {
+  for(i=1; i<=n; i++) {
+    fil=file[i]
+    if(fil ~ '"\"${INCLUDE}\""' && fil !~ '"\"${EXCLUDE}\""') {
+      name=cmd=icnpath=icnname=icnext=""
+      match(fil, /^;([^\n]+)/, m); filename=m[1]
+      match(fil, /\nName=([^\n]+)/, m); name=m[1]
+      if(match(fil, /\nName\[('"${LR:-@}|${L:-@}"')\]=([^\n]+)/, m)) name=m[2]
+      match(fil, /\nExec=([^\n]+)/, m); cmd=m[1]
+      match(fil, /\nIcon=([^\n]*\/)?([^\n.]+)([.][^\n]*)?/, m)
+      icnpath=m[1]; icnname=m[2]; icnext=substr(m[3],2)
+      # For completeness sake, case #1 below, "icon with path", would be:
+      #    ? "icon-name=\"" icnpath icnname "." icnext "\"" \
+      #    ? "" \
+      # However, the tree widget does not support it.
+      x=sprintf("<item%s>%s | %s</item>",\
+        icnpath \
+          ? " image-name=\"" icnpath icnname "." icnext "\"" \
+          : match(icnname, /^gtk-/) \
+            ? " stock-id=\"" icnname "\"" : " icon-name=\"" icnname "\"", \
+        name, cmd)
+      print x
+      #print x > "/dev/stderr"
+      #printf "icnpath=%s name=%s ext=%s\n", icnpath, icnname, icnext > "/dev/stderr"
+      ##print file[i] > "/dev/stderr"
+    }
+  }
+ }' /usr/share/applications/*.desktop
+)
+    <action signal="cursor_changed">echo \$TREE > $HOME/.config/wallpaper/program</action>
+    <action signal="cursor_changed" type="refresh">PROGRAM</action>
+   </tree>
+   <hbox>
+    <button>
+     <input file stock="gtk-close"></input>
+     <label>$LOC_CLOSE</label>
+    </button>
+   </hbox>
+  </vbox>
+ </window>
+EOF
+if [ -s $HOME/.config/wallpaper/prgm ]; then
+  . $HOME/.config/wallpaper/prgm && [ -n "$PROGRAM" ] && echo $PROGRAM ||
+    echo "$1"
+else
+  echo "$1"
+fi
+rm -f $HOME/.config/wallpaper/program $HOME/.config/wallpaper/prgm
+}
+
+### end ProgramChooser
+
+# step: This is a simplified version of Nathan F's Program Chooser 0.3
+# http://www.murga-linux.com/puppy/viewtopic.php?t=29654
+# I have replaced some shell code with an awk script for speed and simplicity.
 
 # parse our arguments
 case $1 in
@@ -189,12 +296,48 @@ case $1 in
  open_filer
  exit 0
  ;;
+ -programchooser)
+   shift
+   programchooser "$@"
+ exit 0
+ ;;
  *)
+   echo >&2 "$1: not implemented"
  exit
  ;;
 esac
 
-
-
-
-
+# TODO
+: << REMOVE_ME
+ BEGIN {RS=""}
+  {file[++n]=$0} # slurp n input files
+ END {
+  for(i=1; i<=n; i++) {
+    name=cmd=icon_path=icon_name=icon_ext=""
+    if(file[i] ~ INCLUDE && file[i] !~ EXCLUDE) {
+      if(match(file[i], /\n(Name)=([^\n]+)/, m)) name=m[2]
+      if(match(file[i], /\n(Name\\['"${ENVIRONMENT_LANG}"'\\])=([^\n]+)/, m)) name=m[2]
+      if(match(file[i], /\n(Exec)=([^\n]+)/, m)) cmd=m[2]
+      if(match(file[i], /\n(Icon)=([^\n]*\/)?([^\n.]+)([.][^\n]*)?/, m)) {
+        icon_path=m[2]
+        icon_name=m[3]
+        icon_ext=substr(m[4],2)
+      }
+      # For completeness sake, case #1 below, "icon with path", would be:
+      #    ? "icon-name=\"" icon_path icon_name "." icon_ext "\"" \
+      #    ? "" \
+      # However, the tree widget does not support it.
+      x=sprintf("<item%s>%s | %s</item>",\
+        icon_path \
+          ? " image-name=\"" icon_path icon_name "." icon_ext "\"" \
+          : match(icon_name, /^gtk-/) \
+            ? " stock-id=\"" icon_name "\"" : " icon-name=\"" icon_name "\"", \
+        name, cmd)
+      print x
+      #print x > "/dev/stderr"
+      #printf "icon_path=%s name=%s ext=%s\n", icon_path, icon_name, icon_ext > "/dev/stderr"
+      ##print file[i] > "/dev/stderr"
+    }
+  }
+ }' /usr/share/applications/*
+REMOVE_ME

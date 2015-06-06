@@ -4,8 +4,8 @@
   <Summary xml:lang="it">Imposta lo sfondo per il desktop</Summary>
   <About xml:lang="en">
     <License>GPL v2</License>
-    <Version>0.1</Version>
-    <Homepage>http://grafpup.org/</Homepage>
+    <Version>0.7.0</Version>
+    <Homepage></Homepage>
   </About>
   <AppMenu>
    <Item icon="multimedia-player" option="-play">
