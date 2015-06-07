@@ -5,10 +5,7 @@
 
 # source INT and RANDOM_IMAGE settings
 . "${USRDIR}/preferences"
-if [ "${RANDOM_IMAGE}" = true ]; then
-  shuffle=shuf
-  shift
-fi
+[ "${RANDOM_IMAGE}" = true ] && shuffle=${SHUFFLE:-shuf}
 
 # mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'
 # $1 ::= [[mode':']image-dir-path] | playlist-file-path

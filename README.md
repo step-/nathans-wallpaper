@@ -20,7 +20,8 @@ Wallpaper setter 0.7.0 enhances usability and functionality:
  * New application status bar displays image meta data.
  * Tooltips added to mode and action buttons and to preferences dialog.
  * Undistorted wallpaper stretching (constant aspect ratio).
- * Slideshow: add shuffle list, new image types, lower resource usage.
+ * Slideshow: add playlist support, shuffle list, new image types,
+   lower resource usage.
  * Redesigned preferences dialog with program chooser.
  * Bug and incompatibility fixes.
  * Test on Fatdog64 701, gtkdialog 0.8.4.
@@ -42,16 +43,16 @@ Panel, but a command line is also available:
 Note that 'Live mode' is only available when no ARG is specified. In this case you can play a slideshow by selecting "Play" from the application menu.
 
 The slideshow directory is set in the Preferences dialog (application menu).
+
 The slideshow plays using the current wallpaper mode (Centre, Tile, Scale
-or Stretch). You can specify a different mode in the `-play` option or by
-prepending the mode and a colon to the image path argument, i.e.,
+or Stretch). The wallpaper mode is set in the Preferences dialog (application menu), or you can set its value in file `$HOME/.config/wallpaper/backgroundmode`.  You can override the default mode in the `-play` option or prepend the mode and a colon to the image path argument, i.e.,
 
     /usr/bin/wallpaper Stretch:/path/to/wallpaper.jpg
 
 A playlist-file simply lists the set of image filepaths, one per line,
 formatted as `[mode':']/path/to/image.ext` like in the previous example.
 
-To set slideshow delay and shuffle mode use the Preferences dialog (application
+Set slideshow delay and shuffle mode in the Preferences dialog (application
 menu) or manually set suitable values in `$HOME/.config/wallpaper/preferences`.
 
 ## Warnings
@@ -69,7 +70,8 @@ slideshow before shutting down X. The command line is: `wallpaper -stop`.
 
 If you play the slideshow with
 
-    wallpaper -play-list playlist-file
+    wallpaper -play-list=playlist-file
+ 
 you may inadvertently include a non-image file or a corrupted image file inside `playlist-file`. Similarly, you could type something like
 
     wallpaper my-precious-data.xls

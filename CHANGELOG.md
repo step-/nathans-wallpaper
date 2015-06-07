@@ -1,5 +1,17 @@
 # Changelog
 
+## 20150607 (repository commit 20150607)
+
+### General
+
+ * README file updates.
+ * Bump version to 0.7.0.1.
+
+### Fixed
+
+ * In shuffle mode `wallpaper -play-list=playlist-file` reverted to default
+   slide directory.
+
 ## 20150503 (repository commit 20150606)
 
 ### Enhance usability
