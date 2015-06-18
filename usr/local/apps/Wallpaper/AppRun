@@ -254,7 +254,7 @@ export -f get_mode_button # bash
 
 trigger_mode_button() # $1-mode|'read' $2-LIVE('true'|'false')
 {
-if [ "${DEBUG}" -gt 1 ]; then
+if [ "${DEBUG:-0}" -gt 1 ]; then
 set +x
 echo >&2 "
 ---------- trigger_mode_button $*"

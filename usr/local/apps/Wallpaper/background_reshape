@@ -115,7 +115,7 @@ get_image_dims() # $1-image-path
 # Legacy reshaping method; augmented with vertical reshaping.
 image_cut() # $1-image-in $2-image-out
 {
-if [ "${DEBUG}" -gt 1 ]; then
+if [ "${DEBUG:-0}" -gt 1 ]; then
 set +x
 echo >&2 "
 ---------- image_cut $(date)"
@@ -158,7 +158,7 @@ fi
 # center. It subsumes the legacy, augmented method and is to be preferred.
 image_scale() # $1-image-in $2-image-out
 {
-if [ "${DEBUG}" -gt 1 ]; then
+if [ "${DEBUG:-0}" -gt 1 ]; then
 echo >&2 "
 ---------- image_scale $(date)"
 set -x
@@ -175,7 +175,7 @@ fi
 # Make/cache a screen-size black image.
 make_screen_image() # $1-width $2-height
 {
-if [ "${DEBUG}" -gt 1 ]; then
+if [ "${DEBUG:-0}" -gt 1 ]; then
 set +x
 echo >&2 "
 ---------- make_screen_image"
