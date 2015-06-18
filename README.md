@@ -14,7 +14,7 @@ Wallpaper setter 0.7.0 enhances usability and functionality:
 
  * New live preview mode - The desktop wallpaper is updated immediately as the
    file list selection changes. Changes are temporary and automatically
-   revert on exit, or can be made permanent.
+   revert on exit, or they can be made permanent.
  * Full BMP, GIF and TIFF support across all program functions.
  * Preview icons for folder and no-image objects.
  * New application status bar displays image meta data.

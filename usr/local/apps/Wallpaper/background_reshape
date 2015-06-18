@@ -16,6 +16,8 @@
 #140107 fix if image not in subdir.
 #150503 step: see https://github.com/step-/nathans-wallpaper/
 
+DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
+
 #|set -x
 #|LOG=/tmp/backg.log
 #|exec 1>$LOG 2>&1
@@ -113,10 +115,12 @@ get_image_dims() # $1-image-path
 # Legacy reshaping method; augmented with vertical reshaping.
 image_cut() # $1-image-in $2-image-out
 {
-#|set +x
-#|echo >&2 "
-#|---------- image_cut $(date)"
-#|set -x
+if [ "${DEBUG}" -gt 1 ]; then
+set +x
+echo >&2 "
+---------- image_cut $(date)"
+set -x
+fi
 local IMAGEHORIZ IMAGEVERT ratio
 #read IMAGEHORIZ a IMAGEVERT a << EOF
 #$(2>&- ${IMAGEPNM} "$1" | pamfile 2>&1 | grep -F 'stdin:' | cut -f 2 -d ',')
@@ -154,9 +158,11 @@ fi
 # center. It subsumes the legacy, augmented method and is to be preferred.
 image_scale() # $1-image-in $2-image-out
 {
-#|echo >&2 "
-#|---------- image_scale $(date)"
-#|set -x
+if [ "${DEBUG}" -gt 1 ]; then
+echo >&2 "
+---------- image_scale $(date)"
+set -x
+fi
   which pamscale pamcomp >/dev/null 2>&1 || return 1 # fall back to image_cut()
   local underlay=$(make_screen_image ${ROOTHORIZ} ${ROOTVERT})
   2>&- ${IMAGEPNM} "$1" |
@@ -164,20 +170,21 @@ image_scale() # $1-image-in $2-image-out
     pamcomp -align center -valign middle - "${underlay}" |
     ${PNMIMAGE} 2>/dev/null > "$2" ||
     return 1 # explicit
-#|set +x
 }
 
 # Make/cache a screen-size black image.
 make_screen_image() # $1-width $2-height
 {
-#|set +x
-#|echo >&2 "
-#|---------- make_screen_image"
+if [ "${DEBUG}" -gt 1 ]; then
+set +x
+echo >&2 "
+---------- make_screen_image"
+set -x
+fi
   local outf=/tmp/wallpaper-screen-$1-$2.pnm
   if [ ! -s "${outf}" ]; then
     # generate file
-    cat | pnmtile $1 $2 > "${outf}" <<\EOF
-P1
+    echo "P1
 24 8
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
@@ -187,9 +194,10 @@ P1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-EOF
+" | pnmtile $1 $2 > "${outf}"
   fi
   echo -n "${outf}"
+[ "${DEBUG}" ] && set +x
 }
 
 # Debug
@@ -204,6 +212,7 @@ EOF
 # Reshape image using new method if possible.
 image_scale "${imgIN}" "${imgOUT}" || image_cut "${imgIN}" "${imgOUT}"
 # image_scale and image_cut output an empty $imgOUT file on errors.
+[ "${DEBUG}" ] && set +x
 
 # if empty file or #140107 fix if image not in subdir
 if [ -s "${imgOUT}" ]; then

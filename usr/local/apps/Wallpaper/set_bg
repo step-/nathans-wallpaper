@@ -8,6 +8,8 @@
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
+DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
+
 # Emit pathname of current wallpaper preview file
 get_current_preview()
 {
@@ -82,8 +84,8 @@ case ${ifp} in *.bmp|*.BMP) NEWIMAGE=$(bmptojpg "${ifp}");; *) NEWIMAGE= ;; esac
 if [ "$MODE" = "Stretch" ]; then
  #truncated image is created, in a subdirectory, ex: /usr/share/backgrounds/.177/image.jpg
  # where "177" is the screen aspect ratio, as a percentage.
-#|echo >&2 "======== set_bg calls ${APPDIR}/background_reshape" "${NEWIMAGE}"
- "${APPDIR}/background_reshape" "${NEWIMAGE}"
+ [ "${DEBUG}" ] && echo >&2 "========== set_bg calls ${APPDIR}/background_reshape" "${NEWIMAGE}"
+ DEBUG=${DEBUG} "${APPDIR}/background_reshape" "${NEWIMAGE}"
  RETVAL=$?
  if [ $RETVAL -eq 10 -o $RETVAL -eq 11 ];then # legacy compatibility
   read NEWIMAGE < /tmp/qwallpaper_reshaped
