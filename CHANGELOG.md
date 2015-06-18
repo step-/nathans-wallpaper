@@ -9,6 +9,8 @@
 
 ### Fixed
 
+ * Pressing Clear button immediately after X startup loses drive icons.
+
  * On fresh start applying stretched wallpaper hangs (in make\_screen\_image)
    on PC model ASUS X53S.
 

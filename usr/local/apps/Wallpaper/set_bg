@@ -22,7 +22,8 @@ mkdir -p ${HOME}/.config/wallpaper
 if [ "$1" = "-clear" ];then
  x=$HOME/.config/rox.sourceforge.net/ROX-Filer
  y=$HOME/.config/wallpaper
- grep -v '<backdrop' $x/pb_default > $y/pb &&
+ [ $x/pb_default -ot $x/PuppyPin ] && z=$x/PuppyPin || z=$x/pb_default
+ grep -v '<backdrop' $z > $y/pb &&
  mv -f $y/pb $x/pb_default &&
  rox -p $x/pb_default
  # remove cached copies of current wallpaper
