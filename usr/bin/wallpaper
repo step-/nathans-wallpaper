@@ -1,4 +1,37 @@
 #!/bin/dash
+
+usage()
+{
+  cat << EOF
+Usage:
+  ${0##*/} [FILE [FILE...]] | [OPTION]
+OPTIONs:
+  -about                    display version dialog and exit
+  -h|-help                  output this text and exit
+  -play[=MODE]              play FILEs located in the slideshow directory
+  -play-list=PLAYLIST-FILE  play the FILE paths listed in PLAYLIST-FILE
+  -prefs                    display application preferences dialog
+  -stop                     stop the slideshow
+
+A single FILE sets the background and exits.  Multiple FILEs play
+a slideshow in the background.  No FILE nor OPTION displays the
+application GUI.  Supported FILE formats: JPEG, PNG, GIF, TIFF, BMP.
+
+The slideshow directory can be set with -prefs.  Each slide plays using the
+saved wallpaper MODE: Centre, Tile, Scale, Stretch.  MODE can be set with
+-prefs or by writing its value in \$HOME/.config/wallpaper/backgroundmode.
+Bypass using the saved mode with -play=MODE or by prefixing FILE with MODE
+and a colon, i.e., /usr/bin/wallpaper Stretch:/path/to/wallpaper.jpg
+
+PLAYLIST-FILE lists one filepath per line as: [MODE':']/path/to/image.ext.
+Set slideshow delay and shuffle mode with -prefs or in
+\$HOME/.config/wallpaper/preferences.
+EOF
+}
+
+case $1 in
+  -h|--help) usage; exit;;
+  -prefs) exec "${0%/*}/../local/apps/Wallpaper/functions" -preferences;;
+esac
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
 DEBUG=${DEBUG} exec "${0%/*}/../local/apps/Wallpaper/AppRun" "$@"
-

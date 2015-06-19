@@ -1,10 +1,15 @@
 # Changelog
 
-## 20150618 (repository commit 20150618)
+## 20150619
+
+ * Add command line options `-h`, `-help`, `-prefs` to `wallpaper` command.
+ * README updates.
+
+## 20150618
 
 ### General
 
- * Debug command-line option partially implemented. Usage: `DEBUG=LEVEL wallpaper`.
+ * Partially implement debug command-line option. Usage: `DEBUG=LEVEL wallpaper`.
  * Bump version to 0.7.0.2.
 
 ### Fixed
@@ -14,7 +19,7 @@
  * On fresh start applying stretched wallpaper hangs (in make\_screen\_image)
    on PC model ASUS X53S.
 
-## 20150607 (repository commit 20150607)
+## 20150607
 
 ### General
 
