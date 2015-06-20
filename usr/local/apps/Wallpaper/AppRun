@@ -270,8 +270,8 @@ fi
       echo "$1" > backgroundmode
     fi &&
     if [ true = "${live_mode}" ]; then
-       echo "${IMAGE}" > bg_img
-       # set_bg eventually calls rox to change pinboard background.
+      #20150620- (let set_bg handle bg_img)# echo "${IMAGE}" > bg_img
+      # set_bg eventually calls rox to change pinboard background.
       DEBUG=${DEBUG} "${APPDIR}/set_bg" "${IMAGE}" &&
         touch bg_changed # just touch! for dialog_change_revert and on_signal
     fi
