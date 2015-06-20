@@ -26,12 +26,17 @@ and a colon, i.e., /usr/bin/wallpaper Stretch:/path/to/wallpaper.jpg
 PLAYLIST-FILE lists one filepath per line as: [MODE':']/path/to/image.ext.
 Set slideshow delay and shuffle mode with -prefs or in
 \$HOME/.config/wallpaper/preferences.
+
+ENVIRONMENT:
+  \$DEBUG: Enable debug trace to stderr; set verbosity (integer) 1-3.
 EOF
 }
 
 case $1 in
   -h|--help) usage; exit;;
-  -prefs) exec "${0%/*}/../local/apps/Wallpaper/functions" -preferences;;
+  -prefs) DEBUG=${DEBUG:-} \
+    exec "${0%/*}/../local/apps/Wallpaper/functions" -preferences;;
 esac
-DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
-DEBUG=${DEBUG} exec "${0%/*}/../local/apps/Wallpaper/AppRun" "$@"
+
+DEBUG=${DEBUG:-} \
+exec "${0%/*}/../local/apps/Wallpaper/AppRun" "$@"

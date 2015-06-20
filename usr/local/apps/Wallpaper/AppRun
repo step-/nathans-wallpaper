@@ -162,6 +162,7 @@ if [ "$#" -eq 1 ];then
      fixwidgets -wallpaper_setter
    else
      # adding ${thismode}: allows changing mode while the slideshow is playing
+      DEBUG=${DEBUG:-} \
      "${APPDIR}/set_bg" "${thismode}:${ifp}"
      # "${APPDIR}/set_bg" "$1" # revert 120808
      #exec set_bg "$1" #110408
@@ -272,7 +273,8 @@ fi
     if [ true = "${live_mode}" ]; then
       #20150620- (let set_bg handle bg_img)# echo "${IMAGE}" > bg_img
       # set_bg eventually calls rox to change pinboard background.
-      DEBUG=${DEBUG} "${APPDIR}/set_bg" "${IMAGE}" &&
+      DEBUG=${DEBUG:-} \
+      "${APPDIR}/set_bg" "${IMAGE}" &&
         touch bg_changed # just touch! for dialog_change_revert and on_signal
     fi
   fi
@@ -748,6 +750,7 @@ on_signal() # $1-received-signal
       read mode bg < restore &&
       if [ restore -ot bg_changed -o restore -ot pb_default ]; then
           echo "${mode}" > backgroundmode &&
+          DEBUG=${DEBUG:-} \
           "${APPDIR}/set_bg" "${bg}" || res=1
       fi
     fi

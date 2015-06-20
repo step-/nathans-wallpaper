@@ -20,6 +20,7 @@ get_current_preview()
 
 mkdir -p ${HOME}/.config/wallpaper
 if [ "$1" = "-clear" ];then
+ [ "${DEBUG}" ] && set -x
  x=$HOME/.config/rox.sourceforge.net/ROX-Filer
  y=$HOME/.config/wallpaper
  [ $x/pb_default -ot $x/PuppyPin ] && z=$x/PuppyPin || z=$x/pb_default
@@ -39,6 +40,7 @@ if [ "$1" = "-clear" ];then
  rm -f "/usr/share/backgrounds/.preview/$x.jpg"
 
  echo "[none]" > $y/bg_img
+ [ "${DEBUG}" ] && set +x
  exit
 fi
 
@@ -86,7 +88,8 @@ if [ "$MODE" = "Stretch" ]; then
  #truncated image is created, in a subdirectory, ex: /usr/share/backgrounds/.177/image.jpg
  # where "177" is the screen aspect ratio, as a percentage.
  [ "${DEBUG}" ] && echo >&2 "========== set_bg calls ${APPDIR}/background_reshape" "${NEWIMAGE}"
- DEBUG=${DEBUG} "${APPDIR}/background_reshape" "${NEWIMAGE}"
+ DEBUG=${DEBUG} \
+ "${APPDIR}/background_reshape" "${NEWIMAGE}"
  RETVAL=$?
  if [ $RETVAL -eq 10 -o $RETVAL -eq 11 ];then # legacy compatibility
   read NEWIMAGE < /tmp/qwallpaper_reshaped
