@@ -7,6 +7,7 @@ Usage:
   ${0##*/} [FILE [FILE...]] | [OPTION]
 OPTIONs:
   -about                    display version dialog and exit
+  -clear                    clear desktop background
   -h|-help                  output this text and exit
   -play[=MODE]              play FILEs located in the slideshow directory
   -play-list=PLAYLIST-FILE  play the FILE paths listed in PLAYLIST-FILE
@@ -33,6 +34,8 @@ EOF
 }
 
 case $1 in
+  -clear) DEBUG=${DEBUG:-} \
+    exec "${0%/*}/../local/apps/Wallpaper/set_bg" -clear;;
   -h|--help) usage; exit;;
   -prefs) DEBUG=${DEBUG:-} \
     exec "${0%/*}/../local/apps/Wallpaper/functions" -preferences;;
