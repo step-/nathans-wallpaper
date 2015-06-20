@@ -26,7 +26,7 @@ if [ "$1" = "-clear" ];then
  grep -v '<backdrop' $z > $y/pb &&
  mv -f $y/pb $x/pb_default &&
  rox -p $x/pb_default
- # remove cached copies of current wallpaper
+ # remove cached copies of the current wallpaper
  if read x < $y/bg_img; then
   x=${x##*/}
   find /usr/share/backgrounds/.[0-9]* -name "${x}" -exec rm -f '{}' \; 2>&-
@@ -99,7 +99,7 @@ if which rox >&- 2>&-; then
 #tell rox to use new bg image, note this will also write to ${HOME}/Choices/ROX-Filer/PuppyPin
 # Careful! If ROX-Filer doesn't grok the $NEWIMAGE file type it will actually
 # delete $NEWIMAGE (with a dialog window that says 'removing the backdrop').
-rox --RPC << EOF
+ rox --RPC << EOF
 <?xml version="1.0"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
  <env:Body xmlns="http://rox.sourceforge.net/SOAP/ROX-Filer">
@@ -111,6 +111,7 @@ rox --RPC << EOF
 </env:Envelope>
 
 EOF
+ echo "${NEWIMAGE}" > ${HOME}/.config/wallpaper/bg_img
 else
  true
  #need to use xsetroot or something.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 20150620
+
+### Fixed
+
+ * `set_bg -clear` command-line does not remove cached copies of
+   the current wallpaper (#1).
+
 ## 20150619
 
  * Add command line options `-h`, `-help`, `-prefs` to `wallpaper` command.
@@ -9,7 +16,8 @@
 
 ### General
 
- * Partially implement debug command-line option. Usage: `DEBUG=LEVEL wallpaper`.
+ * Partially implement debug command-line option.
+   Usage: `DEBUG=LEVEL wallpaper`.
  * Bump version to 0.7.0.2.
 
 ### Fixed
