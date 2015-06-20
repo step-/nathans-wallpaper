@@ -35,6 +35,7 @@ Panel, but a command line is also available:
     /usr/bin/wallpaper [ARG]            # where ARG can be:
     "/path/to/wallpaper.jpg"            # set background (JPEG, PNG, etc.)
     -about                              # display version dialog and exit
+    -clear                              # clear desktop background
     -h|-help                            # output help text and exit
     -play[=MODE]                        # play images under slideshow directory
     -play-list=PLAYLIST-FILE            # play image paths in PLAYLIST-FILE
@@ -55,6 +56,11 @@ A PLAYLIST-FILE simply lists the set of image filepaths, one per line,
 formatted as `[MODE':']/path/to/image.ext` like in the previous example.
 
 Set slideshow delay and shuffle mode in the Preferences dialog or by editing `$HOME/.config/wallpaper/preferences`.
+
+### Environment Variables
+
+The following environment variables affect the application: `SCALE_FILTER`,
+`DEBUG`. Run `wallpaper --help` for more information.
 
 ## Warnings
 

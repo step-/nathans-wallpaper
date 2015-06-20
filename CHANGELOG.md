@@ -2,6 +2,11 @@
 
 ## 20150620
 
+ * Add `SCALE_FILTER` environment variable and related help text.
+ * Add command line option `-clear` to `wallpaper` command.
+ * Expand partial implementation of `DEBUG` option.
+ * README and CHANGELOG updates.
+
 ### Fixed
 
  * `set_bg -clear` command-line does not remove cached copies of
