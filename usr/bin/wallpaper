@@ -30,6 +30,9 @@ Set slideshow delay and shuffle mode with -prefs or in
 
 ENVIRONMENT:
   \$DEBUG: Enable debug trace to stderr; set verbosity (integer) 1-3.
+  \$SCALE_FILTER: Scaling method for Stretch MODE; one of: point box triangle
+    quadratic cubic catrom mitchell gauss gauss sinc bessel hanning hamming
+    blackman kaiser normal hermite(default) lanczos, pixel-mixing.
 EOF
 }
 
@@ -42,4 +45,5 @@ case $1 in
 esac
 
 DEBUG=${DEBUG:-} \
+SCALE_FILTER=${SCALE_FILTER:-hermite} \
 exec "${0%/*}/../local/apps/Wallpaper/AppRun" "$@"
