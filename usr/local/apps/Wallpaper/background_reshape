@@ -166,20 +166,9 @@ echo >&2 "
 set -x
 fi
   which pamscale pamcomp >/dev/null 2>&1 || return 1 # fall back to image_cut()
-  local filter=${SCALE_FILTER}
-  # When $filter is null pamscale's scaling method is pixel mixing, refer
-  # man pamscale(1). Explicitly allow "pixel-mixing" for null.
-  if [ "${filter}" = "pixel-mixing" ]; then
-    unset filter
-  else
-    filter=-filter=${filter-hermite} # default hermite for increased quality
-  fi
-  # At this point $filter is non-null unless user set SCALE_FILTER=pixel-mixing.
-  # Pamscale's filters: point box triangle quadratic cubic catrom mitchell gauss
-  # sinc bessel hanning hamming blackman kaiser normal hermite lanczos.
   local underlay=$(make_screen_image ${ROOTHORIZ} ${ROOTVERT})
   2>&- ${IMAGEPNM} "$1" |
-    pamscale ${filter} -xyfill ${ROOTHORIZ} ${ROOTVERT} |
+    pamscale -xyfill ${ROOTHORIZ} ${ROOTVERT} |
     pamcomp -align center -valign middle - "${underlay}" |
     ${PNMIMAGE} 2>/dev/null > "$2" ||
     return 1 # explicit
