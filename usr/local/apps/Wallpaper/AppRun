@@ -219,10 +219,8 @@ export -f get_loc_mode_label # bash
 
 make_mode_button() # $1-mode $1-old-mode
 {
-#|set +x
-#|echo >&2 "
-#|---------- make_mode_button $*"
 #|set -x
+#|: -------- make_mode_button $*
   local label tooltip match= mode=$1 oldmode=$2
   read label tooltip <<EOF
   $(get_loc_mode_label "${mode}")
@@ -263,12 +261,8 @@ export -f get_mode_button # bash
 
 trigger_mode_button() # $1-mode|'read' $2-LIVE('true'|'false')
 {
-if [ "${DEBUG:-0}" -gt 1 ]; then
-set +x
-echo >&2 "
----------- trigger_mode_button $*"
-set -x
-fi
+[ "${DEBUG:-0}" -gt 1 ] && set -x
+: -------- trigger_mode_button $*
   #"${APPDIR}/slideshow" -stop
   local cwd=${PWD} # bash
   local mode live_mode=$2
@@ -617,15 +611,13 @@ export BG_DLG="
 </window>
 "
 
-# Prompt user about restoring initial background picture. Runs on exit.
+# Prompt user about restoring initial background picture. Runs on exit/close/abort.
 # If a slideshow did run let user choose between initial picture and last slide.
 # If a slideshow is active show infobox and keep the show running in the bg.
 dialog_change_revert()
 {
-#|set +x
-#|echo >&2 "
-#|---------- dialog_change_revert $*"
 #|set -x
+#|: -------- dialog_change_revert $*
   # return 1 to stay in main window
   if ps | grep -q '[w]allslide'; then # sic [w]al...
     # On exit keep an active slideshow running - feature.
@@ -633,13 +625,14 @@ dialog_change_revert()
     dialog_ok_cancel "${LOC_ACTIVE_SLIDESHOW}" || return 1 # back to main
     return 0 # no revert and exit app
   fi
-  # Here slideshow is inactive so the background can revert.
-  local res=0
+  # Here the slideshow is inactive so the displayed background can revert
+  # to a previous state.
+  local goback=0
   local cwd=${PWD} # bash
   cd "${USRDIR}" &&
-  # if user did not 'Apply' changes
+  # if the user did not 'Apply' changes
   if [ -f restore ]; then
-    # and some changes did occur that the background can revert to
+    # and the user or slideshow changed the background
     if [ restore -ot bg_changed -o restore -ot pb_default ]; then
       case $1 in
         # if user clicked [x] in the title bar or app got signal
@@ -660,16 +653,19 @@ dialog_change_revert()
                 cp bg_changed restore && sleep 1 && touch bg_changed
                 # slept 1 because [ f1 -ot f2 ] minimum resolution = 1 second
                 # revert to last slide and exit app
+              else
+                # user clicked 'initial picture' so no-op, which reverts to
+                # the initial picture and exits
+                : no-op
               fi
-              # else user clicked 'initial picture', revert to it and exit
             else
-              res=1 # go back to main
+              goback=1 # go back to main
             fi
           else # user clicked 'Close', there were changes but no slideshow
             # prompt 2: revert to 'initial picture' and exit or go back to main
             if ! dialog_ok_cancel \
               "${LOC_REVERT_CHANGES} -- ${LOC_REVERT_CONFIRM}"; then
-              res=1 # go back to main
+              goback=1 # go back to main
             fi
             # else revert to initial picture and exit
           fi
@@ -677,7 +673,8 @@ dialog_change_revert()
     fi
   fi
   cd "${cwd}"
-  return ${res} # 0 exit app | 1 go back to main
+#|set +x
+  return ${goback} # 0 exit app | 1 go back to main
 }
 export -f dialog_change_revert # bash
 
