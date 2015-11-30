@@ -243,7 +243,11 @@ EOF
  <action>if true trigger_mode_button \"${mode}\" \$LIVE</action>
  <action>if true refresh:STATUSBAR</action>
 </radiobutton>"
-  [ -n "${match}" ] && echo true > /tmp/wallpaper-radio-${mode}
+  if [ -n "${match}" ]; then
+    echo true > "/tmp/wallpaper-radio-${mode}"
+  else
+    rm -f "/tmp/wallpaper-radio-${mode}"
+  fi
 #|set +x
 }
 
@@ -251,7 +255,8 @@ get_mode_button() # output currently active button name (= enabled mode)
 {
   set +f
   # Theory of operation: in make_mode_button() notice that each RADIO${mode}
-  # button auto-saves its state (true/false) in /tmp/wallpaper-radio-${mode}...
+  # button auto-saves its state (true/false) to /tmp/wallpaper-radio-${mode}:
+  # return the name of the button whose state==true.
   grep -lF true /tmp/wallpaper-radio-* 2>/dev/null | cut -d- -f3
 }
 export -f get_mode_button # bash
@@ -563,7 +568,7 @@ export BG_DLG="
      <button tooltip-text=\"${LOC_APPLY_TOOLTIP}\">
       <label>$LOC_APPLY</label>
       <input file stock=\"gtk-apply\"></input>
-       <action>trigger_mode_button \"$(get_mode_button)\" true</action>
+       <action>trigger_mode_button \"\$(get_mode_button)\" true</action>
       <action> 2>&- mv -f \"${USRDIR}/restore\" \"${USRDIR}/restore-not\"</action>
       <action>refresh:STATUSBAR</action>
       <action>which fixwidgets >&- 2>&- && fixwidgets -wallpaper_setter &</action>
