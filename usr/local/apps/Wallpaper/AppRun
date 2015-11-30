@@ -388,7 +388,15 @@ swapimagefunc()
  # Fail silently when the conversion utility is unavailable.
  # Don't convert again if an up-to-date preview is already available;
  # see also set_bg -clear.
- mkdir -p "${preview%/*}" # hidden from dialog
+
+ # Create the preview directory (fixed path to be backwards compatible).
+ previewdir="${preview%/*}"
+ if ! [ -e "${previewdir}" ]; then
+   # Allow symlinking $previewdir, i.e.,
+   # ln -s /tmp/wallpaper-preview /usr/share/backgrounds/.preview
+   previewdir=$(readlink "${previewdir}")
+   mkdir -p "${previewdir}"
+ fi
  if [ ! -f "${preview}" ] || test "${IMAGE}" -nt "${preview}"; then
   case "${imgname}" in # ignore conversion errors (close stderr)
     *.jpg|*.jpeg|*.JPG|*.JPEG) ln -sf "${IMAGE}" "${preview}" ;; # no convert
