@@ -10,16 +10,21 @@ VERSION="0.7.0.2"
 export PREFS="$HOME/.config/wallpaper/preferences"
 [ ! -f $PREFS ] && touch $PREFS
 . $PREFS
-[ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$RANDOM_IMAGE" ] || echo 'RANDOM_IMAGE="false"' >> $PREFS
+[ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
-[ "$FILER" ] || echo 'FILER="defaultfilemanager"' >> $PREFS
 [ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
-[ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
+if [ "$FATDOG_STATE_DIR" ]; then
+  [ "$FILER" ] || echo 'FILER="rox"' >> $PREFS
+  [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultpaint"' >> $PREFS
+else
+  [ "$FILER" ] || echo 'FILER="defaultfilemanager"' >> $PREFS
+  [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
+fi
 . $PREFS
-echo $FILER > $HOME/.config/wallpaper/FILER
-echo $VIEWER > $HOME/.config/wallpaper/VIEWER
-echo $IMGEDITOR > $HOME/.config/wallpaper/EDITOR
+echo "$FILER" > $HOME/.config/wallpaper/FILER
+echo "$VIEWER" > $HOME/.config/wallpaper/VIEWER
+echo "$IMGEDITOR" > $HOME/.config/wallpaper/EDITOR
 
 # Get translations
 #LANG=de_DE.UTF-8 # full example
