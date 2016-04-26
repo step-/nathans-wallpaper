@@ -3,7 +3,7 @@
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
-VERSION="0.7.0.2"
+VERSION="0.7.3"
 
 # Make sure working space and files are in place
 [ ! -d $HOME/.config/wallpaper ] && mkdir $HOME/.config/wallpaper
@@ -89,7 +89,7 @@ export PREFS_DLG="
  <vbox>
   <frame $LOC_SLIDESHOW_FRAME>
    <hbox space-expand=\"false\" space-fill=\"false\">
-    <hbox space-expand=\"false\" space-fill=\"false\"> 
+    <hbox space-expand=\"false\" space-fill=\"false\">
      <text>
       <label>$LOC_DELAY</label>
      </text>
@@ -200,8 +200,6 @@ programchooser()
 # include/exclude category is an awk pattern matching .desktop file categories
 # awk program further down reads all of /usr/share/applications/*
 echo "$1" > $HOME/.config/wallpaper/program
-# TODO remove test comment below
-#set -- "$1" gtk-apply Application "$4"
 ${GTKDIALOG:-gtkdialog} --center --stdin << EOF > $HOME/.config/wallpaper/prgm
  <window title="$LOC_MAIN" icon-name="document-open">
   <vbox>
@@ -225,7 +223,6 @@ ${GTKDIALOG:-gtkdialog} --center --stdin << EOF > $HOME/.config/wallpaper/prgm
 $(
 LR=${LANG%.*} #ex:pt_BR
 L=${LANG%_*} #ex:pt
-L=de; LR=de # TODO REMOVE ME
 INCLUDE=$3
 EXCLUDE=$4
 awk '
@@ -258,7 +255,10 @@ awk '
       ##print file[i] > "/dev/stderr"
     }
   }
- }' /usr/share/applications/*.desktop
+ }' $(
+  for p in /usr/share/applications/*.desktop; do
+    [ -r "$p" ] && echo "$p"
+  done)
 )
     <action signal="cursor_changed">echo \$TREE > $HOME/.config/wallpaper/program</action>
     <action signal="cursor_changed" type="refresh">PROGRAM</action>
@@ -312,37 +312,3 @@ case $1 in
  ;;
 esac
 
-# TODO
-: << REMOVE_ME
- BEGIN {RS=""}
-  {file[++n]=$0} # slurp n input files
- END {
-  for(i=1; i<=n; i++) {
-    name=cmd=icon_path=icon_name=icon_ext=""
-    if(file[i] ~ INCLUDE && file[i] !~ EXCLUDE) {
-      if(match(file[i], /\n(Name)=([^\n]+)/, m)) name=m[2]
-      if(match(file[i], /\n(Name\\['"${ENVIRONMENT_LANG}"'\\])=([^\n]+)/, m)) name=m[2]
-      if(match(file[i], /\n(Exec)=([^\n]+)/, m)) cmd=m[2]
-      if(match(file[i], /\n(Icon)=([^\n]*\/)?([^\n.]+)([.][^\n]*)?/, m)) {
-        icon_path=m[2]
-        icon_name=m[3]
-        icon_ext=substr(m[4],2)
-      }
-      # For completeness sake, case #1 below, "icon with path", would be:
-      #    ? "icon-name=\"" icon_path icon_name "." icon_ext "\"" \
-      #    ? "" \
-      # However, the tree widget does not support it.
-      x=sprintf("<item%s>%s | %s</item>",\
-        icon_path \
-          ? " image-name=\"" icon_path icon_name "." icon_ext "\"" \
-          : match(icon_name, /^gtk-/) \
-            ? " stock-id=\"" icon_name "\"" : " icon-name=\"" icon_name "\"", \
-        name, cmd)
-      print x
-      #print x > "/dev/stderr"
-      #printf "icon_path=%s name=%s ext=%s\n", icon_path, icon_name, icon_ext > "/dev/stderr"
-      ##print file[i] > "/dev/stderr"
-    }
-  }
- }' /usr/share/applications/*
-REMOVE_ME
