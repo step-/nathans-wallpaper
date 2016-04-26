@@ -397,7 +397,7 @@ swapimagefunc()
  # Create the preview directory (fixed path to be backwards compatible).
  previewdir="${preview%/*}"
  if ! [ -e "${previewdir}" ]; then
-   if [ test -L "${previewdir}"; then
+   if [ -L "${previewdir}" ]; then
      # Create $previewdir's target, i.e., create /tmp/wallpaper-preview when
      # ln -s /tmp/wallpaper-preview /usr/share/backgrounds/.preview
      # This can be useful on Fatdog64 and Puppies where /tmp is a RAM filesystem.
