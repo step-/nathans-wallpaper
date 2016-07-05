@@ -17,6 +17,7 @@
 #150503 step: see https://github.com/step-/nathans-wallpaper/
 
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
+CACHEROOT=${CACHEROOT:-/usr/share/backgrounds}
 
 #|set -x
 #|LOG=/tmp/backg.log
@@ -30,7 +31,7 @@ set -x
 fi
 
 #get current image...
-#this will be: /usr/share/backgrounds/<aspect ratio>/<image file>
+#this will be: /usr/share/backgrounds/.<aspect ratio>/<image file>
 curIMAGEFILE=
 if [ -f "$1" ]; then
   curIMAGEFILE="$1"
@@ -52,11 +53,11 @@ EOF
 
 #create subdir for truncated images...
 ASPECTRATIO=.$(( $ROOTHORIZ * 100 / $ROOTVERT )) #as a percentage. ex: 1280x800 screen is 160%
-mkdir -p /usr/share/backgrounds/${ASPECTRATIO}
+mkdir -p "$CACHEROOT/$ASPECTRATIO"
 
 #20150520 step+
 imgIN="${curIMAGEFILE}"
-imgOUT="/usr/share/backgrounds/${ASPECTRATIO}/${IMAGEBASE}"
+imgOUT="$CACHEROOT/$ASPECTRATIO/$IMAGEBASE"
 
 if [ -s "${imgOUT}" ]; then
 #| echo >&2 "Image is already cached

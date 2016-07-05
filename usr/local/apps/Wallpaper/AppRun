@@ -1,4 +1,5 @@
 #!/bin/bash
+#150503 step: see https://github.com/step-/nathans-wallpaper/
 
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
@@ -28,6 +29,7 @@ PREFS="${USRDIR}/preferences"
 [ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
 [ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
+[ "$CACHEROOT" ] || echo 'CACHEROOT="/usr/share/backgrounds"' >> $PREFS # TODO make it per-user
 if [ "$FATDOG_STATE_DIR" ]; then
   [ "$FILER" ] || echo 'FILER="rox"' >> $PREFS
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultpaint"' >> $PREFS
@@ -36,6 +38,7 @@ else
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
 fi
 . $PREFS
+export CACHEROOT
 
 #LANG=de_DE.UTF-8 # full example
 case "${LANG}" in
@@ -387,7 +390,7 @@ swapimagefunc()
    [ -d "${IMAGE}" ] && IMAGE="${FOLDERPREVIEW}" || IMAGE="${NOIMAGEPREVIEW}"
  fi
  local imgname=${IMAGE##*/}
- local preview=/usr/share/backgrounds/.preview/${imgname}.jpg # keep .jpg !
+ local preview="$CACHEROOT/.preview/${imgname}.jpg" # keep .jpg !
  local tojpeg="pnmtojpeg -quality=60"
  # Convert image format to jpg, which gtkdialog can display.
  # Fail silently when the conversion utility is unavailable.

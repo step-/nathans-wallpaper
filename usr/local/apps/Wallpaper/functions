@@ -14,6 +14,7 @@ export PREFS="$HOME/.config/wallpaper/preferences"
 [ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
 [ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
+[ "$CACHEROOT" ] || echo 'CACHEROOT="/usr/share/backgrounds"' >> $PREFS # TODO make it per-user
 if [ "$FATDOG_STATE_DIR" ]; then
   [ "$FILER" ] || echo 'FILER="rox"' >> $PREFS
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultpaint"' >> $PREFS
@@ -22,6 +23,7 @@ else
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultimageeditor"' >> $PREFS
 fi
 . $PREFS
+export CACHEROOT
 echo "$FILER" > $HOME/.config/wallpaper/FILER
 echo "$VIEWER" > $HOME/.config/wallpaper/VIEWER
 echo "$IMGEDITOR" > $HOME/.config/wallpaper/EDITOR
@@ -108,6 +110,19 @@ export PREFS_DLG="
     <entry accept=\"directory\">
      <default>$SLIDEDIR</default>
      <variable>SLIDEDIR</variable>
+    </entry>
+    <button>
+     <input file stock=\"gtk-open\"></input>
+     <action type=\"fileselect\">SLIDEDIR</action>
+    </button>
+   </hbox>
+   <text xalign=\"0\">
+    <label>$LOC_CACHE</label>
+   </text>
+   <hbox>
+    <entry accept=\"directory\">
+     <default>$CACHEROOT</default>
+     <variable>CACHEROOT</variable>
     </entry>
     <button>
      <input file stock=\"gtk-open\"></input>

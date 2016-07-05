@@ -1,4 +1,5 @@
 #!/bin/dash
+#150503 step: see https://github.com/step-/nathans-wallpaper/
 
 #|set +x
 #|echo     " >&2
@@ -9,6 +10,7 @@
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
+CACHEROOT=${CACHEROOT:-/usr/share/backgrounds}
 
 # Emit pathname of current wallpaper preview file
 get_current_preview()
@@ -18,7 +20,7 @@ get_current_preview()
   [ -n "${prw}" ] && echo -n "${prw}"
 }
 
-mkdir -p ${HOME}/.config/wallpaper
+mkdir -p ${HOME}/.config/wallpaper "$CACHEROOT"
 if [ "$1" = "-clear" ];then
  [ "${DEBUG}" ] && set -x
  x=$HOME/.config/rox.sourceforge.net/ROX-Filer
@@ -30,14 +32,14 @@ if [ "$1" = "-clear" ];then
  # remove cached copies of the current wallpaper
  if read x < $y/bg_img; then
   x=${x##*/}
-  find /usr/share/backgrounds/.[0-9]* -name "${x}" -exec rm -f '{}' \; 2>&-
+  find "$CACHEROOT"/.[0-9]* -name "${x}" -exec rm -f '{}' \; 2>&-
  fi
  # remove cached copies of currently previewed wallpaper
  x=$(get_current_preview)
  x=${x##*/}; x=${x%.jpg}
- find /usr/share/backgrounds/.[0-9]* -name "$x" -exec rm -f '{}' \; 2>&-
+ find "$CACHEROOT"/.[0-9]* -name "$x" -exec rm -f '{}' \; 2>&-
  # remove preview of current wallpaper
- rm -f "/usr/share/backgrounds/.preview/$x.jpg"
+ rm -f "$CACHEROOT/.preview/$x.jpg"
 
  echo "[none]" > $y/bg_img
  [ "${DEBUG}" ] && set +x
@@ -68,10 +70,11 @@ bmptojpg () # $1-bmp-image-path
 {
   local name out
   name=${1##*/}; name=${name%.*}
-  out="/usr/share/backgrounds/${name}.jpg"
-  # Convert $1 BMP to $out JPG. Note: we re-use an existing, non-empty $out.
-  # If $out exists there's a slim chance that it isn't the jpeg-ed $1, but
-  # we ignore this unlikely case.
+  out="$CACHEROOT/${name}.jpg"
+  # Convert BMP $1 to JPG $out. Notice that we don't overwrite an
+  # existing, non-empty $out.  So if $out already exists before we get
+  # called we will wrongly return it as the converted $out.  Since the
+  # latter case is very unlikely we ignore it.
   [ ! -s "${out}" ] && bmptopnm "$1" | pnmtojpeg -quality=85 > "${out}"
   [ -s "${out}" ] && echo -n "${out}" # signal success
 }
@@ -85,7 +88,7 @@ case ${ifp} in *.bmp|*.BMP) NEWIMAGE=$(bmptojpg "${ifp}");; *) NEWIMAGE= ;; esac
 #140101 background_reshape has changed...
 [ -z "${NEWIMAGE}" ] && NEWIMAGE="${ifp}"
 if [ "$MODE" = "Stretch" ]; then
- #truncated image is created, in a subdirectory, ex: /usr/share/backgrounds/.177/image.jpg
+ #truncated image is created, in a sub-directory of $CACHEROOT, ex: /usr/share/backgrounds/.177/image.jpg
  # where "177" is the screen aspect ratio, as a percentage.
  [ "${DEBUG}" ] && echo >&2 "========== set_bg calls ${APPDIR}/background_reshape" "${NEWIMAGE}"
  DEBUG=${DEBUG} \
