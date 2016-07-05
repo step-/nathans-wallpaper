@@ -29,7 +29,7 @@ PREFS="${USRDIR}/preferences"
 [ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
 [ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
-[ "$CACHEROOT" ] || echo 'CACHEROOT="/usr/share/backgrounds"' >> $PREFS # TODO make it per-user
+[ "$CACHEROOT" ] || echo 'CACHEROOT="$HOME/.cache/wallpaper"' >> $PREFS
 if [ "$FATDOG_STATE_DIR" ]; then
   [ "$FILER" ] || echo 'FILER="rox"' >> $PREFS
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultpaint"' >> $PREFS

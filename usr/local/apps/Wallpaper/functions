@@ -14,7 +14,7 @@ export PREFS="$HOME/.config/wallpaper/preferences"
 [ "$INT" ] || echo 'INT="15"' >> $PREFS
 [ "$SLIDEDIR" ] || echo 'SLIDEDIR="/usr/share/backgrounds"' >> $PREFS
 [ "$VIEWER" ] || echo 'VIEWER="defaultimageviewer"' >> $PREFS
-[ "$CACHEROOT" ] || echo 'CACHEROOT="/usr/share/backgrounds"' >> $PREFS # TODO make it per-user
+[ "$CACHEROOT" ] || echo 'CACHEROOT="$HOME/.cache/wallpaper"' >> $PREFS
 if [ "$FATDOG_STATE_DIR" ]; then
   [ "$FILER" ] || echo 'FILER="rox"' >> $PREFS
   [ "$IMGEDITOR" ] || echo 'IMGEDITOR="defaultpaint"' >> $PREFS
@@ -179,8 +179,13 @@ export PREFS_DLG="
   </frame>
   <hbox homogenuous=\"true\">
    <button>
-    <label>$LOC_CLOSE</label>
-    <input file stock=\"gtk-close\"></input>
+    <label>$LOC_APPLY</label>
+    <input file stock=\"gtk-apply\"></input>
+    <action>exit:apply</action>
+   </button>
+   <button>
+    <label>$LOC_CANCEL</label>
+    <input file stock=\"gtk-cancel\"></input>
    </button>
   </hbox>
  </vbox>
@@ -188,8 +193,8 @@ export PREFS_DLG="
 "
 ${GTKDIALOG:-gtkdialog} --center --program PREFS_DLG > "${PREFS}.new"
 
-if ! grep -qiF 'exit="abort"' "${PREFS}.new"; then
-  grep -E '^\w+=' "${PREFS}.new" > "${PREFS}"
+if grep -qiF 'exit="apply"' "${PREFS}.new"; then
+  grep -viF 'exit=' "$PREFS.new" | grep -E '^\w+=' > "${PREFS}"
 fi
 rm -f "${PREFS}.new"
 

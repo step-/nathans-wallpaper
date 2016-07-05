@@ -48,6 +48,7 @@ export LOC_APPLY="Apply"
 export LOC_CLEAR="Clear"
 export LOC_FILER="Filer"
 export LOC_CLOSE="Close"
+export LOC_CANCEL="Cancel"
 # tooltips
 export LOC_APPLY_TOOLTIP="Commit current background to show after exit."
 export LOC_CLEAR_TOOLTIP="Clear background and selected image cache."
