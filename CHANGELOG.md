@@ -1,5 +1,22 @@
 # Changelog
 
+## 20160706
+
+ * Delete unnecessary default file `~/.config/wallpaper/preferences`.
+ * Fix "not working well for non-root users"
+ * Improve configuration dialog.
+
+## 20160427
+
+ * Package for Fatdog64-710 alpha2 cycle
+ * Add desktop file and icon
+ * Fix some bugs
+
+## 20151130
+
+ * Fix some bugs.
+ * Code optimizations.
+
 ## 20150620
 
  * Add `SCALE_FILTER` environment variable and related help text.
