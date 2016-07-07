@@ -15,11 +15,12 @@ CACHEROOT=${CACHEROOT:-/usr/share/backgrounds}
 # Emit pathname of current wallpaper preview file
 get_current_preview()
 {
-  local PREVIEWIMG=/tmp/current_wallpaper_selection.jpg
+  local PREVIEWIMG=/tmp/$USER-current_wallpaper_selection.jpg
   local prw="$(readlink -e "${PREVIEWIMG}")" # keep readlink !
   [ -n "${prw}" ] && echo -n "${prw}"
 }
 
+set +f
 mkdir -p ${HOME}/.config/wallpaper "$CACHEROOT"
 if [ "$1" = "-clear" ];then
  [ "${DEBUG}" ] && set -x
@@ -96,7 +97,7 @@ if [ "$MODE" = "Stretch" ]; then
  "${APPDIR}/background_reshape" "${NEWIMAGE}"
  RETVAL=$?
  if [ $RETVAL -eq 10 -o $RETVAL -eq 11 ];then # legacy compatibility
-  read NEWIMAGE < /tmp/qwallpaper_reshaped
+  read NEWIMAGE < /tmp/$USER-qwallpaper_reshaped
  else
   exit 1 # exit without changing background on reshaping error
  fi

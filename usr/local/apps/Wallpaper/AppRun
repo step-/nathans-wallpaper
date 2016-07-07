@@ -122,10 +122,10 @@ OLDMODE=${OLDMODE:-Centre} # Most sensible catchall
 # step 20150503
 # preview widget image (symlink for .jpgs, regular file otherwise)
   #keep compatible with: "#show image #20110624 01micko, requires new gtkdialog"
-export PREVIEWIMG=/tmp/current_wallpaper_selection.jpg
+export PREVIEWIMG=/tmp/$USER-current_wallpaper_selection.jpg
 # stretched wallpaper path container (Stretch mode)
   #keep compatible with Quirky: "#140101 background_reshape has changed..."
-export STRETCHEDWPC=/tmp/qwallpaper_reshaped
+export STRETCHEDWPC=/tmp/$USER-qwallpaper_reshaped
 # new preview icons, info $APPDIR/source.txt
 export FOLDERPREVIEW=${APPDIR}/folder.jpg
 export NOIMAGEPREVIEW=${APPDIR}/no-image.jpg
@@ -196,8 +196,8 @@ elif [ "$#" -gt 1 ]; then
  "${APPDIR}/slideshow" -stop
  [ -f $HOME/.config/sessionrc ] && . $HOME/.config/sessionrc
  [ -f "${USRDIR}/preferences" ] && . "${USRDIR}/preferences"
- for arg; do echo "${arg}"; done > /tmp/wallpaper-slide
- exec "${APPDIR}/slideshow" -start-list /tmp/wallpaper-slide
+ for arg; do echo "${arg}"; done > /tmp/$USER-wallpaper-slide
+ exec "${APPDIR}/slideshow" -start-list /tmp/$USER-wallpaper-slide
 fi
 
 echo $OLDMODE > "${USRDIR}/backgroundmode" # ROX is displaying this mode
@@ -244,15 +244,15 @@ EOF
   echo "<radiobutton ${match:+active=\"true\"} tooltip-text=\"${tooltip}\">
  <label>${label}</label>
  <variable>RADIO${mode}</variable>
- <output file>/tmp/wallpaper-radio-$1</output>
+ <output file>/tmp/$USER-wallpaper-radio-$1</output>
  <action>save:RADIO${mode}</action>
  <action>if true trigger_mode_button \"${mode}\" \$LIVE</action>
  <action>if true refresh:STATUSBAR</action>
 </radiobutton>"
   if [ -n "${match}" ]; then
-    echo true > "/tmp/wallpaper-radio-${mode}"
+    echo true > "/tmp/$USER-wallpaper-radio-${mode}"
   else
-    rm -f "/tmp/wallpaper-radio-${mode}"
+    rm -f "/tmp/$USER-wallpaper-radio-${mode}"
   fi
 #|set +x
 }
@@ -261,9 +261,9 @@ get_mode_button() # output currently active button name (= enabled mode)
 {
   set +f
   # Theory of operation: in make_mode_button() notice that each RADIO${mode}
-  # button auto-saves its state (true/false) to /tmp/wallpaper-radio-${mode}:
+  # button auto-saves its state (true/false) to /tmp/$USER-wallpaper-radio-${mode}:
   # return the name of the button whose state==true.
-  grep -lF true /tmp/wallpaper-radio-* 2>/dev/null | cut -d- -f3
+  grep -lF true /tmp/$USER-wallpaper-radio-* 2>/dev/null | cut -d- -f3
 }
 export -f get_mode_button # bash
 
@@ -359,7 +359,7 @@ fi
 
 #show image #20110624 01micko, requires new gtkdialog
 #CURRENTIMG="`cat $HOME/.config/wallpaper/bg_img`"
-#ln -sf $CURRENTIMG /tmp/current_wallpaper_selection.jpg
+#ln -sf $CURRENTIMG /tmp/$USER-current_wallpaper_selection.jpg
 
 # Supported image type gate. Implement new type here then:
 # - In functions swapimagefunc, status_bar_msg
@@ -401,8 +401,8 @@ swapimagefunc()
  previewdir="${preview%/*}"
  if ! [ -e "${previewdir}" ]; then
    if [ -L "${previewdir}" ]; then
-     # Create $previewdir's target, i.e., create /tmp/wallpaper-preview when
-     # ln -s /tmp/wallpaper-preview /usr/share/backgrounds/.preview
+     # Create $previewdir's target, i.e., create /tmp/$USER-wallpaper-preview
+     # when link $CACHEROOT/.preview -> /tmp/$USER-wallpaper-preview
      # This can be useful on Fatdog64 and Puppies where /tmp is a RAM filesystem.
      previewdir=$(readlink "${previewdir}")
    fi
@@ -427,7 +427,7 @@ export -f swapimagefunc # bash
 # Initialize preview widget with image of first chooser item.
 # Note: chooser widget groups directories first, so we follow suit.
 read IMAGE <<-EOF && [ "${IMAGE}" ] && swapimagefunc
-`ls -d1 --group-directories-first /usr/share/backgrounds/* | head -n 1`
+`set +f; ls -d1 --group-directories-first /usr/share/backgrounds/* | head -n 1`
 EOF
 
 get_app_name_version()
@@ -763,7 +763,7 @@ on_signal() # $1-received-signal
 #|echo >&2 "
 #|---------- on_signal $1"
 #|set -x
-  trap - HUP INT QUIT TERM EXIT
+  trap - HUP INT QUIT TERM ABRT 0
   local signal=$1 res=0 mode bg
   cd "${USRDIR}" &&
   # EXIT=revert is set in dialog_change_revert called by $BG_DLG
@@ -781,8 +781,9 @@ on_signal() # $1-received-signal
       fi
     fi
   fi
+  set +f
   rm -f backgroundmode bg_img bg_changed restore FILER VIEWER EDITOR \
-    /tmp/wallpaper-radio* /tmp/wallpaper-screen*
+    /tmp/$USER-wallpaper-radio-* /tmp/$USER-wallpaper-screen-* \
   cd "${PREVDIR}"
   exit ${res}
 }

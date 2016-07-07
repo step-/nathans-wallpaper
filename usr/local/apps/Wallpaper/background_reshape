@@ -15,12 +15,13 @@
 #140101 BK: leave originals in /usr/share/backgrounds. create subdirs for truncated images. see also set_bg, .xinitrc.
 #140107 fix if image not in subdir.
 #150503 step: see https://github.com/step-/nathans-wallpaper/
+#160707 step: use per-user tmp files; this change is likely to break Quirky compatibility.
 
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
 CACHEROOT=${CACHEROOT:-/usr/share/backgrounds}
 
 #|set -x
-#|LOG=/tmp/backg.log
+#|LOG=/tmp/$USER-backg.log
 #|exec 1>$LOG 2>&1
 
 if [ "${DEBUG:-0}" -gt 2 ]; then
@@ -38,8 +39,8 @@ if [ -f "$1" ]; then
 else
   [ ! "$curIMAGEFILE" ] && [ -f ${HOME}/Choices/ROX-Filer/PuppyPin ] && curIMAGEFILE="`sed -n '/<backdrop/s/[^>]\+>\([^<]\+\).*/\1/p' ${HOME}/Choices/ROX-Filer/PuppyPin`"
   [ ! "$curIMAGEFILE" ] && [ -s ${HOME}/.config/wallpaper/bg_img ] && read curIMAGEFILE < ${HOME}/.config/wallpaper/bg_img
-  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`ls -1 /usr/share/backgrounds/default.* | head -n 1`"
-  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`ls -1 /usr/share/backgrounds/*.jpg | head -n 1`"
+  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`set +f; ls -1 /usr/share/backgrounds/default.* | head -n 1`"
+  [ ! "$curIMAGEFILE" ] && curIMAGEFILE="`set +f; ls -1 /usr/share/backgrounds/*.jpg | head -n 1`"
 fi
 IMAGEBASE=${curIMAGEFILE##*/}
 #|echo >&2 IMAGEBASE=${IMAGEBASE}
@@ -62,7 +63,7 @@ imgOUT="$CACHEROOT/$ASPECTRATIO/$IMAGEBASE"
 if [ -s "${imgOUT}" ]; then
 #| echo >&2 "Image is already cached
 #| ${imgOUT}"
- echo "${imgOUT}" > /tmp/qwallpaper_reshaped
+ echo "${imgOUT}" > /tmp/$USER-qwallpaper_reshaped
  #tell set_bg this is the one to use.
  exit 10 # OK
 fi
@@ -195,7 +196,7 @@ echo >&2 "
 ---------- make_screen_image"
 set -x
 fi
-  local outf=/tmp/wallpaper-screen-$1-$2.pnm
+  local outf=/tmp/$USER-wallpaper-screen-$1-$2.pnm
   if [ ! -s "${outf}" ]; then
     # generate file
     echo "P1
@@ -236,6 +237,6 @@ else
   rm -f "${imgOUT}"
   echo >&2 "$0: Error(s) while reshaping '${imgIN}'"
   exit 6 # error
-fi > /tmp/qwallpaper_reshaped #set_bg will read this.
+fi > /tmp/$USER-qwallpaper_reshaped #set_bg will read this.
 
 ###END###

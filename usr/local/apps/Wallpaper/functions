@@ -276,7 +276,7 @@ awk '
     }
   }
  }' $(
-  for p in /usr/share/applications/*.desktop; do
+  set +f; for p in /usr/share/applications/*.desktop; do
     [ -r "$p" ] && echo "$p"
   done)
 )
