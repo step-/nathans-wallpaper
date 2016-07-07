@@ -26,7 +26,7 @@ if [ "$1" = "-clear" ];then
  [ "${DEBUG}" ] && set -x
  x=$HOME/.config/rox.sourceforge.net/ROX-Filer
  y=$HOME/.config/wallpaper
- [ ! -e $x/pb_default -o $x/pb_default -ot $x/PuppyPin ] && z=$x/PuppyPin || z=$x/pb_default
+ [ -e $x/pb_default -a $x/PuppyPin -ot $x/pb_default ] && z=$x/pb_default || z=$x/PuppyPin
  grep -v '<backdrop' $z > $y/pb &&
  mv -f $y/pb $x/pb_default &&
  rox -p $x/pb_default

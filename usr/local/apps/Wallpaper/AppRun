@@ -80,7 +80,7 @@ get_current_background() # $1-option
   # take the most recent file between PuppyPin and pb_default
   local pf=${HOME}/Choices/ROX-Filer/PuppyPin
   local pb=${HOME}/.config/rox.sourceforge.net/ROX-Filer/pb_default
-  [ "${pf}" -ot "${pb}" ] && pf=${pb}
+  [ -e "${pb}" -a "${pf}" -ot "${pb}" ] && pf=${pb}
   if [ -f "${pf}" ]; then
     #ex.   <backdrop style="Stretched">/path/to/file.ext</backdrop>
     awk '
@@ -144,7 +144,7 @@ if [ "$#" -eq 1 ];then
    exec "$APPDIR/slideshow" -start "${thismode}:${SLIDEDIR:-/usr/share/backgrounds}"
   ;;
   -stop)
-   exec "$APPDIR/slideshow" -stop 
+   exec "$APPDIR/slideshow" -stop
   ;;
   -about)
    exec "$APPDIR/functions" -about
@@ -590,7 +590,7 @@ export BG_DLG="
       <label>$LOC_CLEAR</label>
       <input file stock=\"gtk-clear\"></input>
       <action>'$APPDIR/slideshow' -stop</action>
-      <action>'$APPDIR/set_bg' -clear</action>
+      <action>set -x;'$APPDIR/set_bg' -clear</action>
       <action>refresh:STATUSBAR</action>
      </button>
      $SIDEBAR
@@ -783,7 +783,7 @@ on_signal() # $1-received-signal
   fi
   set +f
   rm -f backgroundmode bg_img bg_changed restore FILER VIEWER EDITOR \
-    /tmp/$USER-wallpaper-radio-* /tmp/$USER-wallpaper-screen-* \
+    /tmp/$USER-wallpaper-radio-* /tmp/$USER-wallpaper-screen-*
   cd "${PREVDIR}"
   exit ${res}
 }
