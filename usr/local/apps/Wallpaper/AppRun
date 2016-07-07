@@ -88,7 +88,7 @@ get_current_background() # $1-option
       split($0, a, /[<>]/)
       path = a[3]
       split(a[2], b, /"/)
-      style = b[2] # Stretched, Centre, Centered, etc.
+      style = b[2] # Stretched, Centre, Centred, Centered, etc.
       # convert to UK-spelling infinitive verb for rox --RPC
       if(style ~ /Scale.*/) style="Scale"
       else if(style ~ /Tile.*/) style="Tile"
@@ -219,7 +219,7 @@ get_loc_mode_label() # $1-mode
     Tile*) echo "${LOC_TILE} ${LOC_TILE_TOOLTIP}";;
     Scale*) echo "${LOC_SCALE} ${LOC_SCALE_TOOLTIP}";;
     Centre*|Center*) echo "${LOC_CENTRE} ${LOC_CENTRE_TOOLTIP}";;
-    *) echo "get_loc_mode_label error";; # shouldn't happen
+    *) echo "Centre" # Most sensible catchall -- but shouldn't happen
   esac
 #|set +x
 }
@@ -263,7 +263,7 @@ get_mode_button() # output currently active button name (= enabled mode)
   # Theory of operation: in make_mode_button() notice that each RADIO${mode}
   # button auto-saves its state (true/false) to /tmp/$USER-wallpaper-radio-${mode}:
   # return the name of the button whose state==true.
-  grep -lF true /tmp/$USER-wallpaper-radio-* 2>/dev/null | cut -d- -f3
+  grep -lF true /tmp/$USER-wallpaper-radio-* 2>/dev/null | cut -d- -f4
 }
 export -f get_mode_button # bash
 
@@ -590,7 +590,7 @@ export BG_DLG="
       <label>$LOC_CLEAR</label>
       <input file stock=\"gtk-clear\"></input>
       <action>'$APPDIR/slideshow' -stop</action>
-      <action>set -x;'$APPDIR/set_bg' -clear</action>
+      <action>'$APPDIR/set_bg' -clear</action>
       <action>refresh:STATUSBAR</action>
      </button>
      $SIDEBAR
