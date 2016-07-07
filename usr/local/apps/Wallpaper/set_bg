@@ -6,6 +6,12 @@
 #|---------- set_bg $(date)"
 #|set -x
 
+# We assume that rox is already running for $USER. If not, on its first
+# invocation for $USER rox will
+# 1) complain that it can't find dir ~/.icons to set link ~/.icons/ROX
+# 2) daemonize and keep gtkdialog's parent process active after gtkdialog has closed.
+# Note that Wallpaper Setter AppRun actually tests for a running ROX-Filer process.
+
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
@@ -103,8 +109,9 @@ if [ "$MODE" = "Stretch" ]; then
  fi
 fi
 
-if which rox >&- 2>&-; then
-#tell rox to use new bg image, note this will also write to ${HOME}/Choices/ROX-Filer/PuppyPin
+if which rox >/dev/null 2>&1; then
+# Tell rox to use a new background image.
+# Note this will also write to ${HOME}/Choices/ROX-Filer/PuppyPin.
 # Careful! If ROX-Filer doesn't grok the $NEWIMAGE file type it will actually
 # delete $NEWIMAGE (with a dialog window that says 'removing the backdrop').
  rox --RPC << EOF
@@ -121,8 +128,8 @@ if which rox >&- 2>&-; then
 EOF
  echo "${NEWIMAGE}" > ${HOME}/.config/wallpaper/bg_img
 else
- true
- #need to use xsetroot or something.
+ # Need to use xsetroot or something.
+ true # not implemented.
 fi
 
 ###END###

@@ -100,3 +100,9 @@ export LOC_REVERT_INITIAL="Initial background"
 export LOC_REVERT_LAST_SLIDE="Last slide"
 export LOC_REVERT_INITIAL_OR_LAST_SLIDE="Choose background"
 
+
+#######################################
+# Messages
+#
+LOC_UPGRADE_GTKDIALOG="Error: Please upgrade gtkdialog."
+LOC_ROX_NOT_RUNNING="Error: Can't find a ROX-Filer process running for the current user."

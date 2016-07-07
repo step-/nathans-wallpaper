@@ -7,19 +7,6 @@ export APPDIR # to $BG_DLG
 
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
 
-#just some insurance 110905
-#need at least gtkdialog-0.7.21
-if gtkdialog3 -v|awk '/version /{split($3,a,".");exit(a[2]>7||a[3]>20)}'; then
-  if ! which gtkdialog4 >&- 2>&-; then
-    xmessage "You need to upgrade gtkdialog"
-    exit 1
-  else
-    export GTKDIALOG=gtkdialog4
-  fi
-else
-  export GTKDIALOG=gtkdialog3
-fi
-
 # setup working space
 export USRDIR=$HOME/.config/wallpaper
 mkdir -p "${USRDIR}"
@@ -59,6 +46,79 @@ case "${LANG}" in
 esac
 . "$APPDIR/locale/english.po" #always run to fill gaps in translation
 [ -f "$APPDIR/locale/${LANGUAGE}.po" ] && . "$APPDIR/locale/${LANGUAGE}.po" 2>&-
+
+#just some insurance 110905
+#need at least gtkdialog-0.7.21
+if gtkdialog3 -v|awk '/version /{split($3,a,".");exit(a[2]>7||a[3]>20)}'; then
+  if ! which gtkdialog4 >/dev/null 2>&1; then
+    xdialog -center "$LOC_UPGRADE_GTKDIALOG"
+    exit 1
+  else
+    export GTKDIALOG=gtkdialog4
+  fi
+else
+  export GTKDIALOG=gtkdialog3
+fi
+
+dialog_ok_cancel() # $1-prompt [$2-button1_label'~~~'('no-cancel'|button2_label)]
+{
+#|set +x
+#|echo >&2 "
+#|---------- dialog_ok_cancel"
+#|set -x
+  # return 1 to stay in main window
+  local label_ok label_cancel button_cancel
+  case "$2" in
+    *~~~*)
+      label_ok='><label>"   '"${2%~~~*}"'   "</label>'
+      label_cancel='><label>"   '"${2#*~~~}"'   "</label>'
+    ;;
+    *)
+      label_ok=' label="gtk-ok">'
+      label_cancel=' label="gtk-cancel">'
+  esac
+  case "$2" in
+    *no-cancel*) :
+    ;;
+    *) button_cancel='
+   <button use-stock="true"'"${label_cancel}"'
+    <action>EXIT:cancel</action>
+   </button>'
+  esac
+# Enter key is equivalent to clicking OK, refer topic "Press 'Enter' instead of"
+# http://murga-linux.com/puppy/viewtopic.php?t=38608
+# ESC key cancels, topics "Hotkeys" and "Hotkey", same thread.
+  eval $(${GTKDIALOG} --center --stdin << EOF
+<window title="$LOC_MAIN" image-name="$APPDIR/DirIcon16.png">
+ <vbox>
+  <vbox border-width="10">
+   <text>
+    <label>$1</label>
+   </text>
+  </vbox>
+  <hseparator></hseparator>
+  <hbox homogeneous="true">
+   <button can-default="true" has-default="true" use-stock="true"${label_ok}
+    <action>EXIT:ok</action>
+   </button>
+   ${button_cancel}
+  </hbox>
+ </vbox>
+ <action signal="key-press-event" condition="command_is_true([ \${KEY_RAW} = 0x9 ] && echo true)">EXIT:escape</action>
+</window>
+EOF
+  )
+  [ ok = "${EXIT}" ]
+}
+export -f dialog_ok_cancel # bash
+
+# We depend on a ROX-Filer process to be already running for $USER, so
+# rox RPC and folder ~/.icons/ROX can work smootly and leave no hanging
+# processes.
+if ! pgrep -u $USER ROX-Filer >/dev/null 2>&1; then
+  dialog_ok_cancel "$LOC_ROX_NOT_RUNNING" "$LOC_QUIT~~~no-cancel"
+  exit 1
+fi
 
 # Emit background_mode \n background_path
 # Note: mode is output as UK-spelling infinitive verb as 'rox --RPC' expects
@@ -327,12 +387,14 @@ case $OLDMODE in
 esac
 IGNORED
 
+# Determine which image source directory to list.
 case "${OLDIMAGE}" in
  "")
   OLDIMAGE="[none]"
   DIR=$SLIDEDIR
  ;;
- "$CACHEROOT"/.[0-9]*/*)
+ /usr/share/backgrounds/.[0-9]*/*|"$CACHEROOT"/.[0-9]*/*)
+   # /usr/share/background included to catch legacy ISO masters/savefiles (corner case)
   DIR=$SLIDEDIR # do not list cached aspect-ratio folders
  ;;
  *)
@@ -690,58 +752,6 @@ dialog_change_revert()
   return ${goback} # 0 exit app | 1 go back to main
 }
 export -f dialog_change_revert # bash
-
-dialog_ok_cancel() # $1-prompt [$2-'no-cancel'|button1-label'~~~'button2-label]
-{
-#|set +x
-#|echo >&2 "
-#|---------- dialog_ok_cancel"
-#|set -x
-  # return 1 to stay in main window
-  local label_ok label_cancel button_cancel
-  case "$2" in
-    *~~~*)
-      label_ok='><label>"   '"${2%~~~*}"'   "</label>'
-      label_cancel='><label>"   '"${2#*~~~}"'   "</label>'
-    ;;
-    *)
-      label_ok=' label="gtk-ok">'
-      label_cancel=' label="gtk-cancel">'
-  esac
-  case "$2" in
-    no-cancel) :
-    ;;
-    *) button_cancel='
-   <button use-stock="true"'"${label_cancel}"'
-    <action>EXIT:cancel</action>
-   </button>'
-  esac
-# Enter key is equivalent to clicking OK, refer topic "Press 'Enter' instead of"
-# http://murga-linux.com/puppy/viewtopic.php?t=38608
-# ESC key cancels, topics "Hotkeys" and "Hotkey", same thread.
-  eval $(${GTKDIALOG} --center --stdin << EOF
-<window title="$LOC_MAIN" icon_name="preferences-desktop-wallpaper">
- <vbox>
-  <vbox border-width="10">
-   <text>
-    <label>$1</label>
-   </text>
-  </vbox>
-  <hseparator></hseparator>
-  <hbox homogeneous="true">
-   <button can-default="true" has-default="true" use-stock="true"${label_ok}
-    <action>EXIT:ok</action>
-   </button>
-   ${button_cancel}
-  </hbox>
- </vbox>
- <action signal="key-press-event" condition="command_is_true([ \${KEY_RAW} = 0x9 ] && echo true)">EXIT:escape</action>
-</window>
-EOF
-  )
-  [ ok = "${EXIT}" ]
-}
-export -f dialog_ok_cancel # bash
 
 trap_with_arg()
 {

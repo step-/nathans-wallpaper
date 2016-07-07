@@ -214,6 +214,10 @@ exec $FILER "$DIR" &
 
 ### begin ProgramChooser
 
+# step: This is a simplified version of Nathan F's Program Chooser 0.3
+# http://www.murga-linux.com/puppy/viewtopic.php?t=29654
+# I have replaced some shell code with an awk script for speed and simplicity.
+
 programchooser()
 {
 # $1-default-program $2-stock-id-icon $3-include-category $4-exclude-category
@@ -302,10 +306,6 @@ rm -f $HOME/.config/wallpaper/program $HOME/.config/wallpaper/prgm
 }
 
 ### end ProgramChooser
-
-# step: This is a simplified version of Nathan F's Program Chooser 0.3
-# http://www.murga-linux.com/puppy/viewtopic.php?t=29654
-# I have replaced some shell code with an awk script for speed and simplicity.
 
 # parse our arguments
 case $1 in
