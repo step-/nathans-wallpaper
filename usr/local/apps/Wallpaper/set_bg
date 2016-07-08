@@ -36,17 +36,17 @@ if [ "$1" = "-clear" ];then
  grep -v '<backdrop' $z > $y/pb &&
  mv -f $y/pb $x/pb_default &&
  rox -p $x/pb_default
- # remove cached copies of the current wallpaper
+ # remove cached copies of the actual background wallpaper
  if read x < $y/bg_img; then
   x=${x##*/}
-  find "$CACHEROOT"/.[0-9]* -name "${x}" -exec rm -f '{}' \; 2>&-
+  rm -f "$CACHEROOT"/.[0-9]*/"$x"
  fi
- # remove cached copies of currently previewed wallpaper
+ # remove cached copies of the current preview wallpaper
  x=$(get_current_preview)
  x=${x##*/}; x=${x%.jpg}
- find "$CACHEROOT"/.[0-9]* -name "$x" -exec rm -f '{}' \; 2>&-
- # remove preview of current wallpaper
- rm -f "$CACHEROOT/.preview/$x.jpg"
+ rm -f "$CACHEROOT"/.[0-9]*/"$x" "$CACHEROOT"/.[0-9]*/"$x.jpg";
+ # remove current preview image (file or link)
+ rm -f "$CACHEROOT/.preview/$x.jpg" "$CACHEROOT/.preview/$x.jpg.jpg"
 
  echo "[none]" > $y/bg_img
  [ "${DEBUG}" ] && set +x

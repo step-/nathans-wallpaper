@@ -515,7 +515,7 @@ status_bar_msg()
 #|set -x
   local state meta topnm morfed img="${IMAGE}"
   [ -n "${img}" ] || return 0
-  local prw="$(readlink -e "${PREVIEWIMG}")" # keep readlink for next line !
+  local prw="$(readlink -f "${PREVIEWIMG}")" # keep readlink -f !
   case "${prw}" in ${FOLDERPREVIEW}|${NOIMAGEPREVIEW}) img= ;; esac
   case "${img}" in
     *.jpg|*.jpeg|*.JPG|*.JPEG) topnm=jpegtopnm;;
@@ -546,12 +546,12 @@ EOF
     else
       case "${mode}" in Stretch*) cch=${cur} ;; esac
     fi
-    # mark state=cached if a stretched image of selection is cached
+    # mark state=cached if a stretched image of the selected item is cached
 #|>&2 echo -e "prw:preview ${prw}\ncch:cached  ${cch}\ncur:current ${cur}\nimg:IMAGE   ${img}"
     fn=${prw%.jpg}
     [ -n "${morfed}" ] && fn="${fn%.*}.${morfed}"
     fn=${fn##*/}
-    [ -f "${cch%/*}/${fn}" ] &&
+    [ -f "${cch%/*}/$fn" -o -f "${cch%/*}/$fn.jpg" ] &&
       state="${LOC_CACHED}${state:+, }${state}"
     # mark state=mode if selection is the current background
     if [ -n "${cur}" ]; then
