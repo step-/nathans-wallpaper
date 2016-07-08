@@ -3,25 +3,30 @@
 This repository includes a bug fix and new functionality fork of
 Nathan's Wallpaper Setter for Fatdog64 linux (and Puppy linux flavors).
 
-## Motivation
+## History and Motivation
 
-In 2006 Puppy linux forum user Nathan developed a shell-based wallpaper
-setter for Grafpup and stopped development at version 0.5.6 [>forum
-thread](http://www.murga-linux.com/puppy/viewtopic.php?t=69658). The app
-was hacked by various forum users and became version 0.6, which is still
-distributed with Fatdog64-700, a 64-bit OS in the Puppy linux family.
+In 2006 Puppy Linux forum user Nathan developed a shell-based wallpaper
+setter and ROX app for Grafpup. Development stopped at version 0.5.6
+[>forum thread](http://www.murga-linux.com/puppy/viewtopic.php?t=69658).
+Then multiple forum users modified and maintained the app as version
+0.6.x. Version 0.6 was distributed with Fatdog64-700, a 64-bit OS in the
+Puppy Linux family.
 
-When I noticed that the Fatdog64 wallpaper setter had distorted my
-wallpaper, I started researching about this problem and found an [old
+When I noticed that the Fatdog64-700 wallpaper setter distorted my
+wallpapers, I started researching about this problem and found an [old
 post](http://bkhome.org/blog/?viewDetailed=02377) on Barry Kauler's
 blog that hinted at a possible solution. This solution was implemented
-in `pwallpaper` setter for Quirky, another Puppy kennel OS, but
-had never been integrated into Nathan's wallpaper setter. So I set out
-to integrate it for Fatdog64. And while doing that I fixed several
-other bugs (or creeping incompatibilities) and added considerable new
-functionality.
+as the `pwallpaper` setter for Quirky, another Puppy kennel OS, but
+it wasn't integrated into Nathan's wallpaper setter. So I set out to
+integrate it in Fatdog64. While doing this I also fixed several other
+problems and creeping incompatibilities, and added new functionality.
 
-## Overview
+This fork is tagged as version series 0.7.x.  WoofCE (on GitHub), the
+Puppy Linux build system, includes yet another Nathan's Wallpaper Setter
+fork, which is based on the 0.6.x series, isn't kept in sync with this
+fork, and isn't actively developed - I believe.
+
+## Overview of This Fork
 
 This Wallpaper Setter enhances usability and functionality with respect
 to the original Nathan's Wallpaper Setter:
@@ -100,8 +105,8 @@ or your ROX pinboard file will become corrupted. This is automatically
 taken care of in Grafpup but will have to be sorted out in Puppy if this
 is to be adopted._
 
-I do not know if this warning still applies to version 0.6.3 on which
-my version 0.7.0 is based. You have been warned; be careful to stop a
+I do not know if this warning still applies to version 0.6.3, which
+this version forked. You have been warned; be careful to stop a
 running slideshow before shutting down X. The command line is:
 `wallpaper -stop`.
 

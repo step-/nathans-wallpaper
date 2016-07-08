@@ -1,5 +1,15 @@
 # Changelog
 
+## 20160708
+
+ * Bump version to 0.7.4 for release.
+ * UPGRADING from previous versions: the cache folder location has
+   changed. Remove folders /usr/share/backgrounds/.nnn (where nnn is
+   a 3-digit number, and /usr/share/backgrounds/.preview. Start the
+   wallpaper changer, find and select your background wallpaper, press
+   `[Clear]` then `[Apply]` then exit the program.
+ * Fix "Clear" button.
+
 ## 20160706
 
  * Delete unnecessary default file `~/.config/wallpaper/preferences`.

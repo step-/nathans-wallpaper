@@ -1,4 +1,5 @@
 #!/bin/dash
+#150503 step: see https://github.com/step-/nathans-wallpaper/
 
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
