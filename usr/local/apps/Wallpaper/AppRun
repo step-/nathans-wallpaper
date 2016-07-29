@@ -525,6 +525,10 @@ status_bar_msg()
     *.bmp|*.BMP) topnm=bmptopnm
       morfed=jpg # tell the code below, on 'Apply' BMP morfs into JPG
       ;;
+    *.svg) topnm=svg_to_pnm
+      morfed=jpg # tell the code below, on 'Apply' BMP morfs into JPG
+      svg_to_pnm() { rsvg-convert "$@" | pngtopnm; }
+      ;;
   esac
   if [ -n "${topnm}" ]; then
     # get image meta data
@@ -564,7 +568,7 @@ EOF
   else
     echo -n "${APP_NAME_VERSION}" # fallback
   fi
-  echo -n "${state}${state:+; }${meta}${meta:+; }${img##*/}"
+  echo -n "${state}${state:+; }${meta}${meta:+; }${img##*/}${morfed:+ (converted to $morfed)}"
 #|set +x
 }
 export -f status_bar_msg # bash
