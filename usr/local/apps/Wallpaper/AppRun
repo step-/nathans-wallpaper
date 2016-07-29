@@ -428,7 +428,7 @@ is_supported_image() # $1-filepath
   # IMPORTANT: image must be a regular file, no links!, no dirs, etc.
   [ -f "$1" ] || return 1
   case "$1" in
-  *.jpg|*.jpeg|*.png|*.gif|*.tif|*.tiff|*.bmp|*.background|*.JPG|*.JPEG|*.PNG|*.GIF|*.TIF|*.TIFF|*.BMP)
+  *.jpg|*.jpeg|*.png|*.gif|*.tif|*.tiff|*.bmp|*.background|*.JPG|*.JPEG|*.PNG|*.GIF|*.TIF|*.TIFF|*.BMP|*.svg)
      return 0 ;;
   *) return 1 ;;
   esac

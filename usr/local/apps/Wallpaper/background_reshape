@@ -68,30 +68,52 @@ if [ -s "${imgOUT}" ]; then
  exit 10 # OK
 fi
 
+# Define image conversion programs.
+unset DEPEND
 case "${IMAGEBASE}" in
-   *.jpg|*.jpeg|*.JPG|*.JPEG) IMAGEPNM=jpegtopnm
-	PNMIMAGE="pnmtojpeg -quality=85" ;;
-   *.png|*.PNG) IMAGEPNM=pngtopnm
-	PNMIMAGE=pnmtopng ;;
-   *.gif|*.GIF) IMAGEPNM=giftopnm
-        PNMIMAGE=pamtogif ;;
-   *.tif|*.tiff|*.TIF|*.TIFF) IMAGEPNM=tifftopnm
-	PNMIMAGE=pnmtotiff ;;
-   *.bmp|*.BMP) IMAGEPNM=bmptopnm
-	PNMIMAGE="pnmtojpeg -quality=85" ;;
-   *) echo >&2 "$0: Unsupported image conversion .${IMAGEBASE##*.}"
-	exit 4 ;;
+  *.jpg|*.jpeg|*.JPG|*.JPEG)
+    IMAGEPNM=jpegtopnm
+    PNMIMAGE="pnmtojpeg -quality=85"
+    DEPEND="${IMAGEPNM%% *} ${PNMIMAGE%% *}" ;;
+  *.png|*.PNG)
+    IMAGEPNM=pngtopnm
+    PNMIMAGE=pnmtopng
+    DEPEND="${IMAGEPNM%% *} ${PNMIMAGE%% *}" ;;
+  *.gif|*.GIF)
+    IMAGEPNM=giftopnm
+    PNMIMAGE=pamtogif
+    DEPEND="${IMAGEPNM%% *} ${PNMIMAGE%% *}" ;;
+  *.tif|*.tiff|*.TIF|*.TIFF)
+    IMAGEPNM=tifftopnm
+    PNMIMAGE=pnmtotiff
+    DEPEND="${IMAGEPNM%% *} ${PNMIMAGE%% *}" ;;
+  *.bmp|*.BMP)
+    IMAGEPNM=bmptopnm
+    PNMIMAGE="pnmtojpeg -quality=85"
+    DEPEND="${IMAGEPNM%% *} ${PNMIMAGE%% *}" ;;
+  *.svg)
+    svg_to_pnm() { rsvg-convert "$@" | pngtopnm; }
+    IMAGEPNM=svg_to_pnm
+    PNMIMAGE="pnmtojpeg -quality=85"
+    DEPEND="rsvg-convert pngtopnm ${PNMIMAGE%% *}" ;;
+  *)
+    echo >&2 "$0: Unsupported image conversion format .${IMAGEBASE##*.}"
+    exit 4 ;;
 esac
 
 # Safety check:
 # test exist($IMAGEPNM,$PNMIMAGE,$PAMCUT) where PAMCUT firstOf(pamcut,pnmcut)
-{ read a; read b; read PAMCUT; read d; } << EOF
-$(which "${IMAGEPNM}" "${PNMIMAGE%% *}" pamcut pnmcut 2>&-)
-EOF
-[ -n "$a" -a -n "$b" -a -n "${PAMCUT}" ] || {
-  echo >&2 "$0: Install ${IMAGEPNM}, ${PNMIMAGE%% *}, pamcut/pnmcut from netpbm"
+unset notfound
+for x in $DEPEND; do
+  command -v $x >/dev/null || notfound="$notfound, $x"
+done
+PAMCUT=$(which pamcut 2>/dev/null)
+[ -z "$PAMCUT" ] && PAMCUT=$(which pnmcut 2>/dev/null)
+[ -z "$PAMCUT" ] && notfound="$notfound, (from package 'netpbm') pamcut or pnmcut"
+if [ -n "$notfound" -o -z "$PAMCUT" ]; then
+  echo >&2 "$0: Please install missing dependencies: ${notfound#, }"
   exit 5
-}
+fi
 
 # Get image dimensions by reading just the minimum necessary data.
 get_image_dims() # $1-image-path
@@ -158,8 +180,9 @@ fi
 }
 
 # New reshaping method.
-# This method scales image up/down filling horizontally and vertically from
-# center. It subsumes the legacy, augmented method and is to be preferred.
+# This method scales image up/down filling horizontally and vertically
+# from center. It subsumes the augmented legacy method (image_cut), and
+# now it's the preferred method.
 image_scale() # $1-image-in $2-image-out
 {
 if [ "${DEBUG:-0}" -gt 1 ]; then
