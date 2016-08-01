@@ -3,7 +3,7 @@
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
-VERSION="0.7.4"
+VERSION="0.7.5"
 
 # Make sure working space and files are in place
 [ ! -d $HOME/.config/wallpaper ] && mkdir $HOME/.config/wallpaper
