@@ -1,5 +1,10 @@
 # Changelog
 
+## 20160801
+
+ * Bump version to 0.7.5 for release.
+ * Support SVG images.
+
 ## 20160708
 
  * Bump version to 0.7.4 for release.
@@ -119,7 +124,7 @@
    image aspect ratio.  This extended `background_reshape` script should be
    drop-in compatible with Quirky, but it's untested there.
  * Since `background_reshape` adds an image cache, the Clear button now
-   extends to clear cached and preview images of the current selection. 
+   extends to clear cached and preview images of the current selection.
  * Script `set_bg` is modified to support other added features and fix
    some bugs.
 

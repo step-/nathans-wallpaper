@@ -34,7 +34,7 @@ to the original Nathan's Wallpaper Setter:
  * New live preview mode - The desktop wallpaper is updated immediately
    as the file list selection changes. Changes are temporary and
    automatically revert on exit, or they can be made permanent.
- * Full BMP, GIF and TIFF support across all program functions.
+ * Full SVG, BMP, GIF and TIFF support across all program functions.
  * Preview icons for folder and non-image files.
  * New application status bar displays image meta data.
  * Tooltips added to mode and action buttons and to preferences dialog.
