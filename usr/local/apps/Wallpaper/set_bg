@@ -16,7 +16,7 @@
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 
 DEBUG=${DEBUG:-} # unset to disable debug trace to stderr; set verbosity (integer) 1-3
-CACHEROOT=${CACHEROOT:-/usr/share/backgrounds}
+CACHEROOT=${CACHEROOT:-$HOME/.cache/wallpaper}
 
 # Emit pathname of current wallpaper preview file
 get_current_preview()
@@ -39,14 +39,16 @@ if [ "$1" = "-clear" ];then
  # remove cached copies of the actual background wallpaper
  if read x < $y/bg_img; then
   x=${x##*/}
-  rm -f "$CACHEROOT"/.[0-9]*/"$x"
+  [ "[none]" != "$x" ] && rm -f "$CACHEROOT"/.[0-9][0-9][0-9]/"$x"
  fi
  # remove cached copies of the current preview wallpaper
  x=$(get_current_preview)
- x=${x##*/}; x=${x%.jpg}
- rm -f "$CACHEROOT"/.[0-9]*/"$x" "$CACHEROOT"/.[0-9]*/"$x.jpg";
- # remove current preview image (file or link)
- rm -f "$CACHEROOT/.preview/$x.jpg" "$CACHEROOT/.preview/$x.jpg.jpg"
+ if [ -n "$x" ]; then
+   x=${x##*/}; x=${x%.jpg}
+   rm -f "$CACHEROOT"/.[0-9][0-9][0-9]/"$x" "$CACHEROOT"/.[0-9][0-9][0-9]/"$x.jpg";
+   # remove current preview image (file or link)
+   rm -f "$CACHEROOT/.preview/$x.jpg" "$CACHEROOT/.preview/$x.jpg.jpg"
+ fi
 
  echo "[none]" > $y/bg_img
  [ "${DEBUG}" ] && set +x
@@ -57,7 +59,10 @@ fi
 MODE=${1%:*}; ifp=${1#*:}; [ "${MODE}" = "${ifp}" ] && MODE=
 
 # accept non-empty image file only
-[ -s "${ifp}" ] || exit 1 # -z=!-n < -f < -s
+if ! [ -s "${ifp}" ]; then # -z=!-n < -f < -s
+  ls -l "$ifp" # print 'not found/empty' message
+  exit 1
+fi
 
 if [ -z "${MODE}" ]; then
   [ ! -s ${HOME}/.config/wallpaper/backgroundmode ] &&
@@ -114,6 +119,7 @@ if which rox >/dev/null 2>&1; then
 # Note this will also write to ${HOME}/Choices/ROX-Filer/PuppyPin.
 # Careful! If ROX-Filer doesn't grok the $NEWIMAGE file type it will actually
 # delete $NEWIMAGE (with a dialog window that says 'removing the backdrop').
+: rox RPC "SetBackDrop('$MODE:$NEWIMAGE')"
  rox --RPC << EOF
 <?xml version="1.0"?>
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
@@ -131,5 +137,8 @@ else
  # Need to use xsetroot or something.
  true # not implemented.
 fi
+
+# We can't know if rox RPC did actually change the wallpaper.
+exit
 
 ###END###
