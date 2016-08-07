@@ -1,5 +1,8 @@
 #!/bin/dash
-# Sets the background image to a slideshow
+# Background wallpaper slideshow.
+# Don't run this script directly. Instead start/stop a slideshow from
+# the File menu of the Wallpaper Setter (type "wallpaper" at a command
+# line).
 
 [ -z "${USRDIR}" ] && USRDIR="${HOME}/.config/wallpaper"
 
