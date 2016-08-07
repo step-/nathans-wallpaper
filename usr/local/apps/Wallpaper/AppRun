@@ -60,7 +60,7 @@ else
   export GTKDIALOG=gtkdialog3
 fi
 
-dialog_ok_cancel() # $1-prompt [$2-button1_label'~~~'('no-cancel'|button2_label)]
+dialog_ok_cancel() # $1-prompt [$2-button1_label'~~~'('no-cancel'|button2_label)] #{{{
 {
 #|set +x
 #|echo >&2 "
@@ -111,7 +111,7 @@ EOF
   [ ok = "${EXIT}" ]
 }
 export -f dialog_ok_cancel # bash
-
+#}}}
 # We depend on a ROX-Filer process to be already running for $USER, so
 # rox RPC and folder ~/.icons/ROX can work smootly and leave no hanging
 # processes.
@@ -120,49 +120,74 @@ if ! pgrep -u $USER ROX-Filer >/dev/null 2>&1; then
   exit 1
 fi
 
+get_current_background() # $1-option #{{{
 # Emit background_mode \n background_path
-# Note: mode is output as UK-spelling infinitive verb as 'rox --RPC' expects
-get_current_background() # $1-option
+# Mode is output as UK-spelling infinitive verb as 'rox --RPC' expects
 {
-  # --from-ROX forces reading PuppyPin
+  # --from-ROX  return data from the most recent rox pinboard file (2 lines) - see CAVEAT-2 below
+  # --from-ROX2 return data from both rox pinboard files (4 lines)
 #|set +x
 #|echo "
 #|------------ get_current_background" >&2
 #|(
 #|set -x
-  if [ "$1" != --from-ROX ] && [ -s "${USRDIR}/bg_img" ]; then
-    cat "${USRDIR}/backgroundmode" "${USRDIR}/bg_img"
-    # Caveat: on startup backgroundmode may not match PuppyPin's current style
-    return
-  fi
-  # Read from ROX
-  # Caveat: apparently rox --RPC doesn't update PuppyPin, so we
-  # take the most recent file between PuppyPin and pb_default
+  case $1 in
+    --from-ROX*) : ;;
+    *)
+      # CAVEAT-1: on startup backgroundmode may not match PuppyPin's
+      # current style
+      local m i
+      m="$USRDIR/backgroundmode" i="$USRDIR/bg_img"
+      [ -s "$m" ] && cat "$m" || echo ""
+      [ -s "$i" ] && cat "$i" || echo ""
+      return
+      ;;
+  esac
+  # CAVEAT-2: Unfortunately, for historical compatibility reasons, this
+  # script still writes two different pinboard files, when most likely
+  # just one could suffice.  So --from-ROX returns the data of the most
+  # recent file between PuppyPin and pb_default. This is a weak spot, as
+  # data taken from one file could not match data taken from the other
+  # one, under some circumstances.  Instead --from-ROX2 returns data
+  # from both PuppyPin and pb_default, with the most recent data first.
+  # Eventually, there should be only one pinboard file, PuppyPin, but
+  # it's unlikely to happen anytime soon.
+
+  local A Z # A is the most recent
   local pf=${HOME}/Choices/ROX-Filer/PuppyPin
   local pb=${HOME}/.config/rox.sourceforge.net/ROX-Filer/pb_default
-  [ -e "${pb}" -a "${pf}" -ot "${pb}" ] && pf=${pb}
-  if [ -f "${pf}" ]; then
-    #ex.   <backdrop style="Stretched">/path/to/file.ext</backdrop>
-    awk '
-    /<backdrop[ >]/ {
-      split($0, a, /[<>]/)
-      path = a[3]
-      split(a[2], b, /"/)
-      style = b[2] # Stretched, Centre, Centred, Centered, etc.
-      # convert to UK-spelling infinitive verb for rox --RPC
-      if(style ~ /Scale.*/) style="Scale"
-      else if(style ~ /Tile.*/) style="Tile"
-      else if(style ~ /Stretch.*/) style="Stretch"
-      else style="Centre"
-      print style; print path
-      exit
-    }' "${pf}"
-    return
-  fi
+  [ -f "${pb}" -a "${pf}" -ot "${pb}" ] && A=$pb Z=$pf || A=$pf Z=$pb
+  ! [ -f "$A" ] && A=/dev/null; ! [ -f "$Z" ] && Z=/dev/null
+  local script
+  script='
+  #ex.   <backdrop style="Stretched">/path/to/file.ext</backdrop>
+  /<backdrop[ >]/ {
+    split($0, a, /[<>]/)
+    path = a[3]
+    split(a[2], b, /"/)
+    style = b[2] # Stretched, Centre, Centred, Centered, etc.
+    # convert to UK-spelling infinitive verb for rox --RPC
+    if(style ~ /Scale.*/) style="Scale"
+    else if(style ~ /Tile.*/) style="Tile"
+    else if(style ~ /Stretch.*/) style="Stretch"
+    else style="Centre"
+    a_style[FILENAME] = style
+    a_path[FILENAME] = path
+  }
+  END {
+    for(i = 1; i < ARGC; i++) {
+      printf "%s\n%s\n", a_style[ARGV[i]], a_path[ARGV[i]]
+    }
+  }
+  '
+  case $1 in
+    --from-ROX)  awk "$script" "$A" ;;
+    --from-ROX2) awk "$script" "$A" "$Z" ;;
+  esac
 #|)
 }
 export -f get_current_background # bash
-
+#}}}
 # what is the old background?
 #grafpup uses pinboard #$HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default
 #puppy 4.1.2 uses $HOME/Choices/ROX-Filer/PuppyPin
@@ -208,8 +233,7 @@ if [ "$#" -eq 1 ];then
    # Note: we don't test is_supported_image $1 on purpose, to give some
    # leeway to a slideshow of symbolically linked images (hidden feature).
 
-   # Besides, $1 may actually be specified as this-mode':'image-file-path,
-   # in which case this-mode overrides OLDMODE
+   # $1 can be specified as [this-mode':']image-file-path
    case $1 in
      *:*) thismode=${1%:*}; ifp=${1#*:} ;;
      *) thismode=${OLDMODE}; ifp=$1 ;;
@@ -222,27 +246,47 @@ if [ "$#" -eq 1 ];then
    if which fixwidgets >&- 2>&-; then
      echo "${ifp}" > "${USRDIR}/bg_img"
      fixwidgets -wallpaper_setter
+     # UNTESTED
    else
-     # adding ${thismode}: allows changing mode while the slideshow is playing
-      DEBUG=${DEBUG:-} \
-      SCALE_FILTER=${SCALE_FILTER:-hermite} \
-     "${APPDIR}/set_bg" "${thismode}:${ifp}"
-     # "${APPDIR}/set_bg" "$1" # revert 120808
-     #exec set_bg "$1" #110408
+     # We will try to remove $cached after setting the new wallpaper.
+     { read x; read cached1; read x; read cached2; } << EOF
+$(get_current_background --from-ROX2)
+EOF
+     : "cached1=($cached1) cached2=($cached2)"
+     case ${cached1%/*} in "$CACHEROOT"/*) cached1=$cached1 ;; esac
+     case ${cached2%/*} in "$CACHEROOT"/*) cached2=$cached2 ;; esac
+     # OK, let's set the wallpaper.
+     # "${thismode}:" allows changing mode while a slideshow is playing.
+     error_in_set_bg=
+     DEBUG=${DEBUG:-} \
+     SCALE_FILTER=${SCALE_FILTER:-hermite} \
+     "${APPDIR}/set_bg" "${thismode}:${ifp}" || error_in_set_bg=1
+     # Note: "set_bg return 0" does not imply that the new image was set.
    fi
-   # Now that the current slideshow image is being displayed and we are
-   # about to exit, we want to tidy up by removing the stretched wallpaper
-   # that script background_reshape created, if any. If we didn't remove it
-   # the slideshow would progressively build up duplicates of all
-   # input image files inside the hidden cache directory.
+   # The new image should be set. We are about to exit.  Tidy up by
+   # removing $STRETCHEDWPC, which script background_reshape creates,
+   # and $catched, the cached copy of the previous stretched wallpaper.
+   # This keeps the slideshow from filling $CACHEROOT with copies of all
+   # images in the playlist (Stretch mode only).
 #|set +x
 #|echo >&2 "
 #|---------- AppRun $(date)"
 #|set -x
-   if [ ${OLDMODE} = Stretch -a -s "${STRETCHEDWPC}" ] && read cached < "${STRETCHEDWPC}"; then
-     rm -f "${cached}" "${STRETCHEDWPC}"
+   if [ -z "$error_in_set_bg" -a \( -f "$cached1" -o -f "$cached2" \) ]; then
+     # Before removing $cached, we make sure it isn't the current
+     # PuppyPin(board) image - it could be if set_bg failed, and
+     # possibly in some other corner cases.
+     sleep .3 # enough time for set_bg to complete its RPC with rox.
+     { read x; read rox1; read x; read rox2; } << EOF
+$(get_current_background --from-ROX2)
+EOF
+     : "rox1=($rox1) rox2=($rox2)"
+     : "cached1=($cached1) cached2=($cached2)"
+     [ "$rox1" != "$cached1" -a "$rox2" != "$cached1" ] && rm -f "$cached1"
+     [ "$rox1" != "$cached2" -a "$rox2" != "$cached2" ] && rm -f "$cached2"
    fi
-   exit
+   rm -f "$STRETCHEDWPC"
+   exit $error_in_set_bg # return 0 doesn't imply that the new bg was set
   ;;
  esac
 elif [ "$#" -gt 1 ]; then
@@ -393,7 +437,7 @@ case "${OLDIMAGE}" in
   OLDIMAGE="[none]"
   DIR=$SLIDEDIR
  ;;
- /usr/share/backgrounds/.[0-9]*/*|"$CACHEROOT"/.[0-9]*/*)
+ /usr/share/backgrounds/.[0-9][0-9][0-9]/*|"$CACHEROOT"/.[0-9][0-9][0-9]/*)
    # /usr/share/background included to catch legacy ISO masters/savefiles (corner case)
   DIR=$SLIDEDIR # do not list cached aspect-ratio folders
  ;;
@@ -790,7 +834,7 @@ on_signal() # $1-received-signal
     fi
   fi
   set +f
-  rm -f backgroundmode bg_img bg_changed restore FILER VIEWER EDITOR \
+  rm -f backgroundmode bg_img bg_changed restore restore-not FILER VIEWER EDITOR \
     /tmp/$USER-wallpaper-radio-* /tmp/$USER-wallpaper-screen-*
   cd "${PREVDIR}"
   exit ${res}
