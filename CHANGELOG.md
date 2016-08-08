@@ -1,5 +1,10 @@
 # Changelog
 
+## 20160808
+
+ * Bump version to 0.7.5.1 for release.
+ * Fix an issue: rox not finding the wallpaper if X is restarted (stretch mode only).
+
 ## 20160801
 
  * Bump version to 0.7.5 for release.
