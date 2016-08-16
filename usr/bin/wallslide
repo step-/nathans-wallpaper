@@ -48,13 +48,17 @@ do
         ifp=$IMG
         [ -z "${first_iter}" -a -s "${USRDIR}/backgroundmode" ] &&
           read MODE < "${USRDIR}/backgroundmode"
+        notify-send $MODE
     esac
 
-    # change desktop background
-    "${APPDIR:-/usr/local/apps/Wallpaper}/AppRun" "${MODE:-Centre}:${ifp}"
-              # was [/usr/bin/]wallpaper "$IMG"
-
-    first_iter= # enable reading backgroundmode
-    sleep ${INT:-15}
+    # Change desktop background.
+    # was [/usr/bin/]wallpaper "$IMG"
+    export ACTIVE_SLIDESHOW_INT=${INT:-15} # signal set_bg
+    if "${APPDIR:-/usr/local/apps/Wallpaper}/AppRun" \
+      "${MODE:-Centre}:${ifp}"
+    then # sleep iff success on changing background
+      first_iter= # enable reading backgroundmode
+      sleep ${INT:-15}
+    fi
   done < "${SHOW}"
 done
