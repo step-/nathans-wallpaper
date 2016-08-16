@@ -1,6 +1,9 @@
 #!/bin/bash
 #150503 step: see https://github.com/step-/nathans-wallpaper/
 
+# Fatdog64 - PINBOARD_FILE is set in /usr/sbin/fatdog-drive-icon*.sh
+PINBOARD_FILE=$HOME/.config/rox.sourceforge.net/ROX-Filer/PuppyPin
+
 # Determine the path to this application.
 APPDIR=${0%/*}; APPDIR=`cd "$APPDIR";pwd`
 export APPDIR # to $BG_DLG
@@ -154,8 +157,8 @@ get_current_background() # $1-option #{{{
   # it's unlikely to happen anytime soon.
 
   local A Z # A is the most recent
-  local pf=${HOME}/Choices/ROX-Filer/PuppyPin
-  local pb=${HOME}/.config/rox.sourceforge.net/ROX-Filer/pb_default
+  local pf=$PINBOARD_FILE
+  local pb="${PINBOARD_FILE%/*}/pb_default"
   [ -f "${pb}" -a "${pf}" -ot "${pb}" ] && A=$pb Z=$pf || A=$pf Z=$pb
   ! [ -f "$A" ] && A=/dev/null; ! [ -f "$Z" ] && Z=/dev/null
   local script
@@ -188,11 +191,9 @@ get_current_background() # $1-option #{{{
 }
 export -f get_current_background # bash
 #}}}
-# what is the old background?
-#grafpup uses pinboard #$HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default
-#puppy 4.1.2 uses $HOME/Choices/ROX-Filer/PuppyPin
-#OLDIMAGE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '>' | cut -f 1 -d '<'`"
-#OLDMODE="`cat $HOME/Choices/ROX-Filer/PuppyPin | grep '<backdrop ' | cut -f 2 -d '"'`" #'
+# What is the old background?
+#historical note: grafpup uses pinboard #$HOME/.config/rox.sourceforge.net/ROX-Filer/pb_default
+#historical note: puppy 4.1.2 uses $HOME/Choices/ROX-Filer/PuppyPin
 { read OLDMODE; read OLDIMAGE; } <<EOF
   $(get_current_background --from-ROX)
 EOF
@@ -249,12 +250,13 @@ if [ "$#" -eq 1 ];then
      # UNTESTED
    else
      # We will try to remove $cached after setting the new wallpaper.
-     { read x; read cached1; read x; read cached2; } << EOF
+     { read x1; read cached1; read x2; read cached2; } << EOF
 $(get_current_background --from-ROX2)
 EOF
-     : "cached1=($cached1) cached2=($cached2)"
-     case ${cached1%/*} in "$CACHEROOT"/*) cached1=$cached1 ;; esac
-     case ${cached2%/*} in "$CACHEROOT"/*) cached2=$cached2 ;; esac
+     : BEFORE
+     : "cached1=($x1${x1:+:}$cached1) cached2=($x2${x2:+:}cached2)"
+     case ${cached1%/*} in "$CACHEROOT"/*) : ;; *) cached1= ;; esac
+     case ${cached2%/*} in "$CACHEROOT"/*) : ;; *) cached2= ;; esac
      # OK, let's set the wallpaper.
      # "${thismode}:" allows changing mode while a slideshow is playing.
      error_in_set_bg=
@@ -265,7 +267,7 @@ EOF
    fi
    # The new image should be set. We are about to exit.  Tidy up by
    # removing $STRETCHEDWPC, which script background_reshape creates,
-   # and $catched, the cached copy of the previous stretched wallpaper.
+   # and $cached[12], cached copies of the previous stretched wallpaper.
    # This keeps the slideshow from filling $CACHEROOT with copies of all
    # images in the playlist (Stretch mode only).
 #|set +x
@@ -273,14 +275,15 @@ EOF
 #|---------- AppRun $(date)"
 #|set -x
    if [ -z "$error_in_set_bg" -a \( -f "$cached1" -o -f "$cached2" \) ]; then
-     # Before removing $cached, we make sure it isn't the current
+     # Before removing $cached[12], we make sure it isn't the current
      # PuppyPin(board) image - it could be if set_bg failed, and
      # possibly in some other corner cases.
      sleep .3 # enough time for set_bg to complete its RPC with rox.
-     { read x; read rox1; read x; read rox2; } << EOF
+     { read x1; read rox1; read x2; read rox2; } << EOF
 $(get_current_background --from-ROX2)
 EOF
-     : "rox1=($rox1) rox2=($rox2)"
+     : AFTER
+     : "rox1=($x1${x1:+:}$rox1) rox2=($x1${x1:+:}$rox2)"
      : "cached1=($cached1) cached2=($cached2)"
      [ "$rox1" != "$cached1" -a "$rox2" != "$cached1" ] && rm -f "$cached1"
      [ "$rox1" != "$cached2" -a "$rox2" != "$cached2" ] && rm -f "$cached2"
@@ -674,7 +677,7 @@ export BG_DLG="
     <frame $LOC_MODE>
      <checkbox tooltip-text=\"${LOC_LIVE_TOOLTIP}\">
        <label>${LOC_LIVE}</label>
-       <variable>LIVE</variable>
+       <variable export=\"true\">LIVE</variable>
        <action>if true trigger_mode_button \"\$(get_mode_button)\" true</action>
      </checkbox>
      <frame>
