@@ -48,7 +48,6 @@ do
         ifp=$IMG
         [ -z "${first_iter}" -a -s "${USRDIR}/backgroundmode" ] &&
           read MODE < "${USRDIR}/backgroundmode"
-        notify-send $MODE
     esac
 
     # Change desktop background.
