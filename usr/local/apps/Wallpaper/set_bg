@@ -6,6 +6,8 @@
 #|---------- set_bg $(date)"
 #|set -x
 
+[ -z "$USRDIR" ] && USRDIR="$HOME/.config/wallpaper"
+
 # Require rox
 if ! pidof ROX-Filer >/dev/null 2>&1; then
   echo "no rox" >&2
@@ -37,11 +39,11 @@ get_current_preview()
 }
 
 set +f
-mkdir -p ${HOME}/.config/wallpaper "$CACHEROOT"
+mkdir -p "$USRDIR" "$CACHEROOT"
 if [ "$1" = "-clear" ];then
  [ "${DEBUG}" ] && set -x
  x=${PINBOARD_FILE%/*}
- y=$HOME/.config/wallpaper
+ y=$USRDIR
  [ -e $x/pb_default -a $PINBOARD_FILE -ot $x/pb_default ] && z=$x/pb_default || z=$PINBOARD_FILE
  grep -v '<backdrop' $z > $y/pb &&
  mv -f $y/pb $x/pb_default &&
@@ -78,9 +80,9 @@ if ! [ -s "${ifp}" ]; then # -z=!-n < -f < -s
 fi >&2
 
 if [ -z "${MODE}" ]; then
-  [ ! -s ${HOME}/.config/wallpaper/backgroundmode ] &&
-    echo Centre > ${HOME}/.config/wallpaper/backgroundmode # sensible catchall
-  read MODE < ${HOME}/.config/wallpaper/backgroundmode
+  [ ! -s "$USRDIR/backgroundmode" ] &&
+    echo Centre > "$USRDIR/backgroundmode" # sensible catchall
+  read MODE < "$USRDIR/backgroundmode"
 fi
 # convert MODE to UK-spelling infinitive verb for rox --RPC
 case $MODE in
@@ -155,22 +157,24 @@ set_pinboard() # $1-pinboard-file-full-path
 # $NEWIMAGE and show 'removing the backdrop' in a dialog box.
 set_pinboard "$PINBOARD_FILE" # full path
 : rox RPC "SetBackDrop('$MODE:$NEWIMAGE')"
-echo >&2 rox RPC "SetBackDrop('$MODE:$NEWIMAGE')"
 # "Distort" MODE is actually a placeholder for the native,
 # unproportional "Stretch" mode.  NEWIMAGE is unconverted for Distort,
 # and converted for Stretch.
-[ $MODE = Distort ] && MODE=Stretch
+[ $MODE = Distort ] && mode=Stretch || mode=$MODE
 rox --RPC << EOF
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
  <env:Body xmlns="http://rox.sourceforge.net/SOAP/ROX-Filer">
   <SetBackdrop>
    <Filename><![CDATA[${NEWIMAGE}]]></Filename>
-   <Style>${MODE}</Style>
+   <Style>$mode</Style>
   </SetBackdrop>
  </env:Body>
 </env:Envelope>
 EOF
-echo "${NEWIMAGE}" > ${HOME}/.config/wallpaper/bg_img
+
+# Save NEWIMAGE and MODE states
+echo "$NEWIMAGE" > "$USRDIR/bg_img"
+echo $MODE > "$USRDIR/backgroundmode"
 
 # We can't know for sure if rox RPC did actually change the wallpaper.
 exit
