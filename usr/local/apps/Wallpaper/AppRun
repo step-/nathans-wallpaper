@@ -317,8 +317,10 @@ get_loc_mode_label() # $1-mode
 #|set -x
   case $1 in
     Stretch*) echo "${LOC_STRETCH} ${LOC_STRETCH_TOOLTIP}";;
+    Distort*) echo "${LOC_DISTORT} ${LOC_DISTORT_TOOLTIP}";;
     Tile*) echo "${LOC_TILE} ${LOC_TILE_TOOLTIP}";;
     Scale*) echo "${LOC_SCALE} ${LOC_SCALE_TOOLTIP}";;
+    Fit*) echo "${LOC_FIT} ${LOC_FIT_TOOLTIP}";;
     Centre*|Center*) echo "${LOC_CENTRE} ${LOC_CENTRE_TOOLTIP}";;
     *) echo "Centre" # Most sensible catchall -- but it shouldn't happen
   esac
@@ -398,11 +400,15 @@ export -f trigger_mode_button # bash
 CENTREBUTTON=$(make_mode_button Centre $OLDMODE)
 TILEBUTTON=$(make_mode_button Tile $OLDMODE)
 SCALEBUTTON=$(make_mode_button Scale $OLDMODE)
+FITBUTTON=$(make_mode_button Fit $OLDMODE)
 STRETCHBUTTON=$(make_mode_button Stretch $OLDMODE)
+DISTORTBUTTON=$(make_mode_button Distort $OLDMODE)
 RADIOBUTTONS="$CENTREBUTTON
 $TILEBUTTON
 $SCALEBUTTON
-$STRETCHBUTTON"
+$FITBUTTON
+$STRETCHBUTTON
+$DISTORTBUTTON"
 
 #20150503 Superseded by using <radiobutton active="true"> in make_mode_button()
 : << \IGNORED

@@ -67,7 +67,7 @@ if [ "$1" = "-clear" ];then
  exit
 fi
 
-# $1 ::= [mode':']image-file-path; mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'
+# $1 ::= [mode':']image-file-path; mode ::= 'Centre'|'Scale'|'Fit'|'Tile'|'Stretch'|'Distort'
 MODE=${1%:*}; ifp=${1#*:}; [ "${MODE}" = "${ifp}" ] && MODE=
 
 # accept non-empty image file only
@@ -85,7 +85,9 @@ fi
 # convert MODE to UK-spelling infinitive verb for rox --RPC
 case $MODE in
  Scale*) MODE=Scale  ;;
+ Fit*) MODE=Fit  ;;
  Stretch*) MODE=Stretch ;;
+ Distort*) MODE=Distort ;; # NOT RPC - renamed later
  Tile*) MODE=Tile ;;
  Center*|Centre*|*) MODE=Centre ;; # sensible catchall
 esac
@@ -153,6 +155,11 @@ set_pinboard() # $1-pinboard-file-full-path
 # $NEWIMAGE and show 'removing the backdrop' in a dialog box.
 set_pinboard "$PINBOARD_FILE" # full path
 : rox RPC "SetBackDrop('$MODE:$NEWIMAGE')"
+echo >&2 rox RPC "SetBackDrop('$MODE:$NEWIMAGE')"
+# "Distort" MODE is actually a placeholder for the native,
+# unproportional "Stretch" mode.  NEWIMAGE is unconverted for Distort,
+# and converted for Stretch.
+[ $MODE = Distort ] && MODE=Stretch
 rox --RPC << EOF
 <env:Envelope xmlns:env="http://www.w3.org/2001/12/soap-envelope">
  <env:Body xmlns="http://rox.sourceforge.net/SOAP/ROX-Filer">

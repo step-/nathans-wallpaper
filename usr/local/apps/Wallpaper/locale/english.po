@@ -8,12 +8,16 @@
 export LOC_CENTRE="Centre"
 export LOC_TILE="Tile"
 export LOC_SCALE="Scale"
+export LOC_FIT="Fit"
 export LOC_STRETCH="Stretch"
+export LOC_DISTORT="Distort"
 # tootips
 export LOC_CENTRE_TOOLTIP="Display image as is, centred on screen."
 export LOC_TILE_TOOLTIP="Checkerboard effect for small images."
-export LOC_SCALE_TOOLTIP="Proportionally enlarge/reduce to fit inside the screen."
-export LOC_STRETCH_TOOLTIP="Proportionally enlarge/reduce to completely fill the screen."
+export LOC_SCALE_TOOLTIP="Proportionally enlarge/reduce image to fit the longer side."
+export LOC_FIT_TOOLTIP="Proportionally enlarge/reduce image to fit the shorter side."
+export LOC_STRETCH_TOOLTIP="Proportionally enlarge/reduce image to completely fill the screen."
+export LOC_DISTORT_TOOLTIP="Stretch image unproportionally."
 
 # Main window title
 export LOC_MAIN="Desktop background"
@@ -62,7 +66,7 @@ export LOC_CLOSE_TOOLTIP="Leave application."
 #
 export LOC_ABOUT_WINDOW="Wallpaper: about"
 export LOC_ABOUT_FRAME="About"
-export LOC_ABOUT_TEXT="     Written October, 2006 by Nathan Fisher especially for Grafpup Linux. Wallpaper alllows you to easily set the background image or run a series of images as a slideshow. This program is free software released under the GPL license version 2."
+export LOC_ABOUT_TEXT="     Written October, 2006 by Nathan Fisher especially for Grafpup Linux. Wallpaper allows you to easily set the background image or run a series of images as a slideshow. This program is free software released under the GPL license version 2."
 
 #######################################
 # Preferences

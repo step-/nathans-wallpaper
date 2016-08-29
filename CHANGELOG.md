@@ -1,6 +1,11 @@
 # Changelog
 
-## 20150816 - ALL USERS SHOULD UPGRADE
+## 20160829
+
+ * Bump version to 0.7.6.0 for release
+ * Add two new image modes, Fit and Distort.
+
+## 20160816 - ALL USERS SHOULD UPGRADE
 
  * Bump version to 0.7.5.2 for release.
  * Fix an issue that could delete all wallpaper files under certain conditions.
