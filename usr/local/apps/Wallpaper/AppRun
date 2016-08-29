@@ -30,6 +30,9 @@ fi
 . $PREFS
 export CACHEROOT
 
+# $1-image-fullpath - See also {N1} in awk script
+is_cached() { case ${1%/*} in "$CACHEROOT"/*) true ;; *) false ;; esac; }
+
 #LANG=de_DE.UTF-8 # full example
 case "${LANG}" in
         da*)	export LANGUAGE="danish" ;;
@@ -171,9 +174,18 @@ get_current_background() # $1-option #{{{
     style = b[2] # Stretched, Centre, Centred, Centered, etc.
     # convert to UK-spelling infinitive verb for rox --RPC
     if(style ~ /Scale.*/) style="Scale"
+    if(style ~ /Fit.*/) style="Fit"
     else if(style ~ /Tile.*/) style="Tile"
     else if(style ~ /Stretch.*/) style="Stretch"
-    else style="Centre"
+    else style="Centre" # most sensible catchall
+
+    # Special case {N1} - On style==Stretch && !is_cached(path) return style=Distort
+    if(style == "Stretch" && match(path, "^.+/")) {
+      dirname = substr(path, 1, RLENGTH) # dirname"/"
+      if(1 != index(dirname, "'"$CACHEROOT/"'")) # !is_cached(path)
+        style = "Distort"
+    }
+
     a_style[FILENAME] = style
     a_path[FILENAME] = path
   }
@@ -254,9 +266,9 @@ if [ "$#" -eq 1 ];then
 $(get_current_background --from-ROX2)
 EOF
      : BEFORE
-     : "cached1=($x1${x1:+:}$cached1) cached2=($x2${x2:+:}cached2)"
-     case ${cached1%/*} in "$CACHEROOT"/*) : ;; *) cached1= ;; esac
-     case ${cached2%/*} in "$CACHEROOT"/*) : ;; *) cached2= ;; esac
+     : "cached1=($x1${x1:+:}$cached1) cached2=($x2${x2:+:}$cached2)"
+     ! is_cached "$cached1" && unset cached1
+     ! is_cached "$cached2" && unset cached2
      # OK, let's set the wallpaper.
      # "${thismode}:" allows changing mode while a slideshow is playing.
      error_in_set_bg=
@@ -276,8 +288,9 @@ EOF
 #|set -x
    if [ -z "$error_in_set_bg" -a \( -f "$cached1" -o -f "$cached2" \) ]; then
      # Before removing $cached[12], we make sure it isn't the current
-     # PuppyPin(board) image - it could be if set_bg failed, and
-     # possibly in some other corner cases.
+     # PuppyPin(board) image - it could be if set_bg failed, or if it's
+     # the only file in the folder, and possibly in some other corner
+     # cases.
      sleep .3 # enough time for set_bg to complete its RPC with rox.
      { read x1; read rox1; read x2; read rox2; } << EOF
 $(get_current_background --from-ROX2)
@@ -321,8 +334,8 @@ get_loc_mode_label() # $1-mode
     Tile*) echo "${LOC_TILE} ${LOC_TILE_TOOLTIP}";;
     Scale*) echo "${LOC_SCALE} ${LOC_SCALE_TOOLTIP}";;
     Fit*) echo "${LOC_FIT} ${LOC_FIT_TOOLTIP}";;
-    Centre*|Center*) echo "${LOC_CENTRE} ${LOC_CENTRE_TOOLTIP}";;
-    *) echo "Centre" # Most sensible catchall -- but it shouldn't happen
+    Centre*|Center*|*) echo "${LOC_CENTRE} ${LOC_CENTRE_TOOLTIP}";;
+    # '*' Most sensible catchall -- but it shouldn't happen
   esac
 #|set +x
 }
