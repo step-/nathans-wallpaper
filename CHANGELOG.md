@@ -1,6 +1,6 @@
 # Changelog
 
-## 20160829-WIP
+## 20160906
 
  * Bump version to 0.7.6.0 for release
  * Add two new image modes, Fit and Distort.
