@@ -132,23 +132,37 @@ if [ "$MODE" = "Stretch" ]; then
 fi
 
 set_pinboard() # $1-pinboard-file-full-path
-# Rox provides a method to set the backdrop of the active pinboard,
-# but no method to find out which is the active pinboard, or to set the
-# backdrop of a given pinboard file.  So, before calling rox --RPC
-# SetBackDrop we need to ensure that $1 is the active pinboard, which
-# is was this function does.  Since it takes rox noticeable time and
-# screen-flicker to redraw the pinboard, we look for evidence that the
-# active pinboard matches $1, in which case we return without further
-# ado.
+# Rox provides a method to set the backdrop of the active pinboard, but no
+# method to find out which is the active pinboard, or to set the backdrop of a
+# given pinboard file.  If there is no active pinboard when the SetBackDrop RPC
+# method is called rox display an error dialog, "No active pinboard...Using the
+# 'Default' pinboard", which causes a second pinboard ('Default') to come into
+# existence. Clicking the desktop switches between the Puppy pinboard and the
+# Default pinboard, which is quite confusing and unexpected.  Therefore, before
+# calling SetBackDrop we test that $1 is already the active pinboard. If it is
+# we don't want to set it again, because it takes rox noticeable time and
+# screen-flicker to redraw the pinboard when it is being set.
 {
-  if [ -n "$ACTIVE_SLIDESHOW_INT" -o -n "$LIVE" ]; then
-    # We're driven from above, presumably the pinboard is set.
-    # wallslide sets ACTIVE_SLIDESHOW_INT
-    # LIVE is a gtkdialog variable
-    return
+  local t
+
+  # Variable LIVE is set if Wallpaper AppRun's gtkdialog is running and is my
+  # ancestor. Assume it set the pinboard.
+  [ -n "$LIVE" ] && return
+
+  # Variable ACTIVE_SLIDESHOW_INT is set if wallslide is running and is my
+  # ancestor. Gtkdialog could not be running. If wallslide called me at least
+  # once before, then I already set the pinboard.
+  if [ -n "$ACTIVE_SLIDESHOW_INT" ]; then
+    # running time of wallslide > slideshow update interval
+    t=$(ps -p "`pgrep wallslide`" --no-headers -o etimes 2>/dev/null)
+    [ -n "$t" ] &&
+      [ "$t" -gt $((2 * $ACTIVE_SLIDESHOW_INT - 1)) ] &&
+      return
   fi
   # set -- $(date +%s; stat -c "%Z" "$PINBOARD_FILE")
   # echo $(($1 - $2 <= 15)) # modified less than 16 s ago
+
+  # We couldn't find any evidence that the pinboard file is already set.
   rox -p "$PINBOARD_FILE"
 }
 # Tell rox to use a new background image.
