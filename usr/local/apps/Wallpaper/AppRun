@@ -242,6 +242,13 @@ if [ "$#" -eq 1 ];then
   -about)
    exec "$APPDIR/functions" -about
   ;;
+  -h|-help|--help)
+   exec wallpaper --help
+  ;;
+  -*)
+   echo "${APPDIR##*/}: invalid option: $1" >&2 # TODO i18n localization
+   exec wallpaper --help >&2
+  ;;
   *) # We get here when wallslide runs AppRun to play a slideshow image.
    # or when user runs /usr/bin/wallpaper /path/to/image/file.ext.
    # Note: we don't test is_supported_image $1 on purpose, to give some

@@ -10,7 +10,12 @@ wallslide=$APPDIR/../../../bin/wallslide
 
 slideshow_is_running()
 {
-  [ ! "`ps | grep wallslide | grep -v grep`" = "" ]
+  {
+  if type pidof; then pidof -x wallslide
+  elif typeof pgrep; then pgrep wallslide
+  else ps | grep -q wallslide
+  fi
+  } >/dev/null 2>&1
 }
 
 killslide()
