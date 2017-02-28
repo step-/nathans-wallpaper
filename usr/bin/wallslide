@@ -1,12 +1,11 @@
 #!/bin/dash
 # Background wallpaper slideshow.
 # Don't run this script directly. Instead start/stop a slideshow from
-# the File menu of the Wallpaper Setter (type "wallpaper" at a command
-# line).
+# the File menu of the Wallpaper Setter, cf. "wallpaper --help".
 
 [ -z "${USRDIR}" ] && USRDIR="${HOME}/.config/wallpaper"
 
-# source INT and RANDOM_IMAGE settings
+# source SLIDEDIR, INT and RANDOM_IMAGE settings
 . "${USRDIR}/preferences"
 [ "${RANDOM_IMAGE}" = true ] && shuffle=${SHUFFLE:-shuf}
 
@@ -17,6 +16,9 @@ MODE=${1%:*}; idp=${1#*:}; [ "${MODE}" = "${idp}" ] && MODE=
 DIR="${idp:-$SLIDEDIR}"
 [ -z "$DIR" ] && DIR=/usr/share/backgrounds
 SHOW="${USRDIR}/slideshow"
+# cases:
+# /usr/bin/wallpaper -play => $APPDIR/slideshow -start
+# /usr/bin/wallpaper -play-dir=$1  => $APPDIR/slideshow -start-dir=$1
 if [ -d "${DIR}" ]; then
   # Try filling MODE value from file backgroundmode, if it exists
   if [ -z "${MODE}" -a -s "${USRDIR}/backgroundmode" ]; then
@@ -25,7 +27,8 @@ if [ -d "${DIR}" ]; then
   find "${DIR}" -type f | grep -i -E "\.(jpg|jpeg|png|gif|tiff?|bmp|svg)$" > "${SHOW}"
 else
   # $1 ::= playlist-file-path
-  # cases: /usr/bin/wallpaper -play-list=$1 or $APPDIR/slideshow -start-list=$1
+  # cases:
+  # /usr/bin/wallpaper -play-list=$1 => $APPDIR/slideshow -start-list=$1
   cp -f "$1" "${SHOW}"
 fi
 if which $shuffle >/dev/null 2>&1; then

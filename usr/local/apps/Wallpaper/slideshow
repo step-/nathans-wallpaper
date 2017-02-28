@@ -26,12 +26,12 @@ case $1 in
     if slideshow_is_running; then
       killslide
     else
-      # $2::=[mode':']image-dir-path; mode::='Centre'|'Scale'|'Tile'|'Stretch'
+      # $2::=[mode':']image-dir-path; mode::='Centre'|'Scale'|'Tile'|'Stretch'|'Distort'
       [ -d "${2#*:}" ] && exec "$wallslide" "$2"
       exec "$wallslide" "${2%/*}" # legacy
     fi
   ;;
-  -start-list)
+  -start-list|-start-dir)
     if slideshow_is_running; then
       killslide
     else

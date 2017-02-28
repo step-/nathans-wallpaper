@@ -225,10 +225,11 @@ export NOIMAGEPREVIEW=${APPDIR}/no-image.jpg
 # if run with an image file or an option as an argument
 if [ "$#" -eq 1 ];then
  case $1 in
-  -play|-play=*|-play-list=*)
+  -play|-play=*|-play-list=*|-play-dir=*)
    [ -f $HOME/.config/sessionrc ] && . $HOME/.config/sessionrc
    [ -f "${USRDIR}/preferences" ] && . "${USRDIR}/preferences"
    case $1 in
+     -play-dir=*) exec "${APPDIR}/slideshow" -start-dir "${1#*=}" ;;
      -play-list=*) exec "${APPDIR}/slideshow" -start-list "${1#*=}" ;;
      -play=*) thismode=${1#*=} ;;
      *) thismode=${OLDMODE} ;;

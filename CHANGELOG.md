@@ -2,6 +2,8 @@
 
 ## Next Release WIP
 
+ * Add `wallpaper -play-dir=FOLDER-PATH` to play slide folder.
+ * Fix "slideshow does not honor slide dir user preference".
  * Documentation updates.
  * Fix rare "double pinboard file" issue.
  * Translation updates by xanad.

@@ -63,7 +63,8 @@ Panel, but a command line is also available:
 -clear                              # clear desktop background
 -h|-help                            # output help text and exit
 -play[=MODE]                        # play images under slideshow directory
--play-list=PLAYLIST-FILE            # play image paths in PLAYLIST-FILE
+-play-dir=FOLDER-PATH               # play image files found in and under FOLDER-PATH
+-play-list=PLAYLIST-FILE            # play paths in PLAYLIST-FILE
 -prefs                              # display application preferences dialog
 path1.ext path2.ext [path.ext...]   # play path*.ext
 -stop                               # stop slideshow
@@ -76,8 +77,8 @@ application menu.
 The slideshow directory can be set with `-prefs` or in the Preferences
 dialog (application menu).
 
-Each slide plays using the current wallpaper MODE: Centre,
-Tile, Scale, Stretch, Distort.  Wallpaper MODE can be set with `-prefs`
+Each slide plays using the currently saved wallpaper mode: Centre,
+Tile, Scale, Stretch, Distort.  Wallpaper mode can be set with `-prefs`
 or the Preferences dialog or by writing the mode value in file
 `$HOME/.config/wallpaper/backgroundmode`.  Bypass using the saved mode
 with `-play=MODE` or by prefixing the MODE and a colon to the image path
