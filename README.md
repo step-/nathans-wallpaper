@@ -18,13 +18,18 @@ post](http://bkhome.org/blog/?viewDetailed=02377) on Barry Kauler's
 blog that hinted at a possible solution. This solution was implemented
 as the `pwallpaper` setter for Quirky, another Puppy kennel OS, but
 it wasn't integrated into Nathan's wallpaper setter. So I set out to
-integrate it in Fatdog64. While doing this I also fixed several other
+integrate it this fork for Fatdog64. While doing so I also fixed other
 problems and creeping incompatibilities, and added new functionality.
 
-This fork is tagged as version series 0.7.x.  WoofCE (on GitHub), the
-Puppy Linux build system, includes yet another Nathan's Wallpaper Setter
-fork, which is based on the 0.6.x series, isn't kept in sync with this
-fork, and isn't actively developed - I believe.
+Since version 0.7.6 this fork is featured as the default wallpaper setter for
+Fatdog64-710.
+
+## This Fork vs. Other Forks
+
+This fork for Fatdog64 is tagged as version series 0.7.x.  WoofCE (on GitHub),
+the Puppy Linux build system, includes yet another Nathan's Wallpaper Setter
+fork, which is based on the 0.6.x series, isn't kept in sync with this fork,
+and isn't actively developed - I believe.
 
 ## Overview of This Fork
 
@@ -72,7 +77,7 @@ The slideshow directory can be set with `-prefs` or in the Preferences
 dialog (application menu).
 
 Each slide plays using the current wallpaper MODE: Centre,
-Tile, Scale, Stretch.  Wallpaper MODE can be set with `-prefs`
+Tile, Scale, Stretch, Distort.  Wallpaper MODE can be set with `-prefs`
 or the Preferences dialog or by writing the mode value in file
 `$HOME/.config/wallpaper/backgroundmode`.  Bypass using the saved mode
 with `-play=MODE` or by prefixing the MODE and a colon to the image path

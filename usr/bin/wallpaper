@@ -20,7 +20,7 @@ a slideshow in the background.  No FILE nor OPTION displays the
 application GUI.  Supported FILE formats: JPEG, PNG, GIF, TIFF, BMP.
 
 The slideshow directory can be set with -prefs.  Each slide plays using the
-saved wallpaper MODE: Centre, Tile, Scale, Stretch.  MODE can be set with
+saved wallpaper MODE: Centre, Tile, Scale, Stretch, Distort.  Set MODE with
 -prefs or by writing its value in \$HOME/.config/wallpaper/backgroundmode.
 Bypass using the saved mode with -play=MODE or by prefixing FILE with MODE
 and a colon, i.e., /usr/bin/wallpaper Stretch:/path/to/wallpaper.jpg

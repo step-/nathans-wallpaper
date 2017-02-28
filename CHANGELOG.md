@@ -1,5 +1,11 @@
 # Changelog
 
+## Next Release WIP
+
+ * Documentation updates.
+ * Fix rare "double pinboard file" issue.
+ * Translation updates by xanad.
+
 ## 20160906
 
  * Bump version to 0.7.6.0 for release
