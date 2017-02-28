@@ -1,7 +1,13 @@
 # nathans-wallpaper
 
-This repository includes a bug fix and new functionality fork of
-Nathan's Wallpaper Setter for Fatdog64 linux (and Puppy linux flavors).
+This repository includes a new-feature, bug-fix fork of "Nathan's Wallpaper
+Setter" for Fatdog64 Linux, and probably also for recent Puppy Linux variants.
+
+## TL;DR NOT!
+
+But if you do, read at least sections 'Starting, Command Line, Slideshow',
+'Warnings', and 'Compatibility' (Fatdog64-700 and beyond users can skip
+'Compatibility').
 
 ## History and Motivation
 
@@ -12,26 +18,27 @@ Then multiple forum users modified and maintained the app as version
 0.6.x. Version 0.6 was distributed with Fatdog64-700, a 64-bit OS in the
 Puppy Linux family.
 
-When I noticed that the Fatdog64-700 wallpaper setter distorted my
-wallpapers, I started researching about this problem and found an [old
-post](http://bkhome.org/blog/?viewDetailed=02377) on Barry Kauler's
-blog that hinted at a possible solution. This solution was implemented
-as the `pwallpaper` setter for Quirky, another Puppy kennel OS, but
-it wasn't integrated into Nathan's wallpaper setter. So I set out to
-integrate it this fork for Fatdog64. While doing so I also fixed other
-problems and creeping incompatibilities, and added new functionality.
+When I noticed that the Fatdog64-700 wallpaper setter distorted my wallpapers,
+I researched the problem and found an [old
+post](http://bkhome.org/blog/?viewDetailed=02377) on Barry Kauler's blog that
+outlines a solution, which Barry implemented as the `pwallpaper` setter for
+Quirky, another Puppy kennel OS. However, his work wasn't integrated into
+Nathan's Wallpaper Setter, so I set out to do the task. This is how this fork
+was born for Fatdog64. Since then I have fixed other problems and creeping
+incompatibilities, and added new functionality.
 
-Since version 0.7.6 this fork is featured as the default wallpaper setter for
-Fatdog64-710.
+Since version 0.7.6 this fork is featured as the default wallpaper app for
+Fatdog64-710, and it can be started from the Control Panel.
 
 ## This Fork vs. Other Forks
 
-This fork for Fatdog64 is tagged as version series 0.7.x.  WoofCE (on GitHub),
-the Puppy Linux build system, includes yet another Nathan's Wallpaper Setter
-fork, which is based on the 0.6.x series, isn't kept in sync with this fork,
-and isn't actively developed - I believe.
+This fork for Fatdog64 is tagged as version series 0.7.x.
+[Woof-Ce](https://github.com/puppylinux-woof-CE/woof-CE), the Puppy Linux build
+system, includes yet another fork of Nathan's Wallpaper Setter, which is based
+on the 0.6.x series but isn't kept in sync with this fork, and isn't actively
+developed - I believe.
 
-## Overview of This Fork
+## Features of This Fork
 
 This Wallpaper Setter enhances usability and functionality with respect
 to the original Nathan's Wallpaper Setter:
@@ -52,7 +59,7 @@ to the original Nathan's Wallpaper Setter:
  * Tested on Fatdog64 versions 700 thorough 710 with gtkdialog 0.8.4.
  * See full set of changes in the [Changelog](CHANGELOG.md) file.
 
-## Starting, command line, slideshow
+## Starting, Command Line, Slideshow
 
 Normally you should start the Wallpaper setter GUI from Fatdog64's Control
 Panel, but a command line is also available:
@@ -100,23 +107,23 @@ The following environment variables affect the application:
 
 ## Warnings
 
-### Stop the slideshow
+### Warning: Stop the Slideshow
 
-I found this warning in Nathan's [original
+Rather old advice: I found this warning in Nathan's [original
 thread](http://www.murga-linux.com/puppy/viewtopic.php?t=29657) for
-version 0.5:
+version **0.5**:
 
 _CAUTION! You must manually stop the slideshow before shutting down X
 or your ROX pinboard file will become corrupted. This is automatically
 taken care of in Grafpup but will have to be sorted out in Puppy if this
 is to be adopted._
 
-I do not know if this warning still applies to version 0.6.3, which
-this version forked. You have been warned; be careful to stop a
-running slideshow before shutting down X. The command line is:
-`wallpaper -stop`.
+I do not know if this old warning still applies to version **0.6.3**, from
+which this fork was derived. You have been warned; be sure to stop a running
+slideshow before shutting down X, with this command line `wallpaper -stop` or
+from the application menu.
 
-### Pass valid image files to the slideshow
+### Warning: Pass Valid Image Files to the Slideshow
 
 If you play the slideshow with
 ```
@@ -145,11 +152,39 @@ plugged.)
 ## Compatibility
 
 I tried to implement my code in a way that is compatible with Quirky's
-`pwallpaper` setter, and possibly with other recent Puppies that are
-still using, or want to use, Nathan's wallpaper setter. However, I make
-no promise about compatibility, as I develop and test on Fatdog64, and I
-have no time to test and fix other Puppies. For those I will be glad to
-merge pull-requests from other contributors.
+`pwallpaper` setter, and possibly with other recent Puppies that include
+Nathan's Wallpaper Setter 0.6.x. However, I can make no promise about
+out-of-the-box compatibility, as I develop and test on Fatdog64 only, and
+there are just too many Puppy variants to follow.
+
+For historical reasons, the scripts of this app invoke a mix of `/bin/bash`,
+`/bin/sh`, `/bin/ash` and `/bin/dash`.  While this works well for Fatdog64, it
+can create an immediate incompatibility for some Puppy Linux versions. I think
+you can fix this issue in two different ways, either by creating symbolic links
+or by editing some scripts.
+
+**Creating Symbolic Links**
+
+Open a terminal window and enter
+
+```sh
+for x in sh ash dash; do ! [ -e /bin/$x ] && ln -s /bin/bash /bin/$x; done
+ls -l /bin/sh /bin/ash /bin/bash /bin/dash
+```
+
+The `ls` command should confirm that all four files exist, either on their own
+or as symbolic links to `/bin/bash`.
+
+**Editing Script Files**
+
+Open a terminal window and enter
+
+```sh
+cd /usr/local/apps/Wallpaper
+for x in AppRun background_reshape set_bg slideshow thumbnail /usr/bin/wallpaper /usr/bin/wallslide; do
+  sed -e '1s@/[^/]*sh@/bash@' -i $x; echo -n $x' '; head -1 $x
+done
+```
 
 One more thing to say about compatibility concerns Fatdog64
 only. As mentioned, Fatdog has (Nathan's) wallpaper setter 0.6.3,
