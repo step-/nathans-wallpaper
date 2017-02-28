@@ -10,11 +10,12 @@
 . "${USRDIR}/preferences"
 [ "${RANDOM_IMAGE}" = true ] && shuffle=${SHUFFLE:-shuf}
 
-# mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'
+# mode ::= 'Centre'|'Scale'|'Tile'|'Stretch'|'Distort'
 # $1 ::= [[mode':']image-dir-path] | playlist-file-path
 MODE=${1%:*}; idp=${1#*:}; [ "${MODE}" = "${idp}" ] && MODE=
 
-DIR="${idp:-/usr/share/backgrounds}"
+DIR="${idp:-$SLIDEDIR}"
+[ -z "$DIR" ] && DIR=/usr/share/backgrounds
 SHOW="${USRDIR}/slideshow"
 if [ -d "${DIR}" ]; then
   # Try filling MODE value from file backgroundmode, if it exists
