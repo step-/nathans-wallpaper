@@ -200,7 +200,7 @@ fi
   if [ "${filter}" = "pixel-mixing" ]; then
     unset filter
   else
-    filter=-filter=${filter-hermite} # default hermite for increased quality
+    filter=-filter=${filter:-hermite} # default hermite for increased quality
   fi
   # At this point $filter is non-null unless user set SCALE_FILTER=pixel-mixing.
   # Pamscale's filters: point box triangle quadratic cubic catrom mitchell gauss
