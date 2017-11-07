@@ -3,6 +3,8 @@
 # Don't run this script directly. Instead start/stop a slideshow from
 # the File menu of the Wallpaper Setter, cf. "wallpaper --help".
 
+MAX_CONSECUTIVE_ERRORS=10
+
 [ -z "${USRDIR}" ] && USRDIR="${HOME}/.config/wallpaper"
 
 # source SLIDEDIR, INT and RANDOM_IMAGE settings
@@ -37,7 +39,7 @@ if which $shuffle >/dev/null 2>&1; then
 fi
 
 # begin loop
-first_iter=true
+first_iter=true consecutive_errors=0
 while :;
 do
   while read IMG; do
@@ -60,8 +62,12 @@ do
     if "${APPDIR:-/usr/local/apps/Wallpaper}/AppRun" \
       "${MODE:-Centre}:${ifp}"
     then # sleep iff success on changing background
+      consecutive_errors=0
       first_iter= # enable reading backgroundmode
       sleep ${INT:-15}
+    else
+      consecutive_errors=$((consecutive_errors +1))
+      [ $consecutive_errors -gt $MAX_CONSECUTIVE_ERRORS ] && exit 1
     fi
   done < "${SHOW}"
 done
