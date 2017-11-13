@@ -26,7 +26,7 @@ if [ -d "${DIR}" ]; then
   if [ -z "${MODE}" -a -s "${USRDIR}/backgroundmode" ]; then
     read MODE < "${USRDIR}/backgroundmode"
   fi
-  find "${DIR}" -type f | grep -i -E "\.(jpg|jpeg|png|gif|tiff?|bmp|svg)$" > "${SHOW}"
+  find -H "${DIR}" -type f | grep -i -E "\.(jpg|jpeg|png|gif|tiff?|bmp|svg)$" > "${SHOW}"
 else
   # $1 ::= playlist-file-path
   # cases:
@@ -40,7 +40,7 @@ fi
 
 # begin loop
 first_iter=true consecutive_errors=0
-while :;
+test -s "$SHOW" && while :;
 do
   while read IMG; do
     # re-source the preferences file in case the interval has changed
