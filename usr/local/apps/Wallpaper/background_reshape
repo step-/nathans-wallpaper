@@ -48,9 +48,11 @@ IMAGEBASE=${curIMAGEFILE##*/}
 #20150520 step- Next line dups all files from off-base slideshow folders. Don't.
 #[ ! -f "/usr/share/backgrounds/${IMAGEBASE}" ] && cp -f "$curIMAGEFILE" /usr/share/backgrounds/ #precaution.
 
-IFS=' x+' read a ROOTHORIZ ROOTVERT a << EOF
+if [ ! "$ROOTHORIZ" -o ! "$ROOTVERT" ]; then
+  IFS=' x+' read a ROOTHORIZ ROOTVERT a << EOF
 $(xwininfo -root | grep ' \-geometry ')
 EOF
+fi
 
 #create subdir for truncated images.
 # AppRun and set_bg expect directory name format %03d.
