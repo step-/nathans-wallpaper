@@ -56,7 +56,7 @@ to the original Nathan's Wallpaper Setter:
  * Redesigned Preferences dialog with program chooser.
  * Bug and compatibility fixes.
  * Works for non-root users.
- * Tested on Fatdog64 versions 700 thorough 710 with gtkdialog 0.8.4.
+ * Tested on Fatdog64 versions 700 thorough 720 with gtkdialog 0.8.4.
  * See full set of changes in the [Changelog](CHANGELOG.md) file.
 
 ## Starting, Command Line, Slideshow

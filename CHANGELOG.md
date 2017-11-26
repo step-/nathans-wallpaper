@@ -1,12 +1,17 @@
 # Changelog
 
-## Next Release WIP
+## 20171126
 
+ * Bump version to 0.7.7.0 for release.
+ * Now the slideshow follows links.
+ * Auto-stop slideshow after MAX consecutive errors.
  * Add `wallpaper -play-dir=FOLDER-PATH` to play slide folder.
  * Fix "slideshow does not honor slide dir user preference".
- * Documentation updates.
+ * Fix desktop file icon.
  * Fix rare "double pinboard file" issue.
- * Translation updates by xanad.
+ * Other minor fixes.
+ * Documentation updates.
+ * Italian translation updates by xanad.
 
 ## 20160906
 
