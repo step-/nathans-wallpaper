@@ -1,3 +1,8 @@
+#### This software is no longer under active development.
+It is replaced by https://github.com/step-/desktop-wallpaper as of Fatdog64 Linux 812 RC 2021-10-16.
+
+----
+
 # nathans-wallpaper
 
 This repository includes a new-feature, bug-fix fork of "Nathan's Wallpaper
